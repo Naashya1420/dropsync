@@ -93,6 +93,27 @@ blocked doing this automatically on the college Wi-Fi; it's a deliberate choice 
 
 ---
 
+## 2b. Online deployment (phone demo)
+
+- Code: **private GitHub repo https://github.com/Naashya1420/dropsync** (branch `main`).
+- Hosting: **Render.com free web service**, built from `Dockerfile` using `render.yaml`
+  (region Singapore, health check `/api/health`, auto-deploy on every push to `main`).
+- The deployed server is light: only `requirements-deploy.txt` (FastAPI, uvicorn, networkx, numpy) and
+  the published data (profiles, metrics, road graph, restaurants, about 11 MB). It reads the road graph without osmnx.
+- **Passcode:** set `DROPSYNC_PASSCODE` in Render → service → Environment. Each phone types it once
+  (remembered 30 days). `/api/health` stays open for Render's health check. It is never stored in git.
+- First-time setup (owner, about 2 min): render.com → sign in with GitHub → **New + → Blueprint** → give Render
+  access to `Naashya1420/dropsync` → select it → enter the passcode → **Apply**. The first build takes about 5–10 min.
+- The free tier sleeps after 15 min idle: open the link about 1 min before the demo to wake it.
+- On phones: rider phone → `https://<your-app>.onrender.com/rider`, customer phone → `/track`
+  (or one phone with two tabs). Laptop: `/stage`. Use "Add to Home screen" for a full-screen app feel.
+- Data written online (field-trial uploads, live logs) is temporary on the free tier (lost on restart).
+- Verified before deploying: the exact files the Dockerfile copies, run with only the deploy dependencies,
+  passed the passcode checks and the full rider/customer flow in a browser. (Docker Hub was unreachable
+  from the college Wi-Fi, so the image itself is built on Render's servers.)
+
+---
+
 ## 3. What DropSync does (one paragraph)
 
 Riders reach the right address but lose minutes in the last 100 m: wrong gate, no parking, unclear
