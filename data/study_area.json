@@ -1,0 +1,12 @@
+{
+  "key": "bengaluru",
+  "city": "Bengaluru",
+  "label": "Bengaluru study zone",
+  "bbox": [
+    12.9631,
+    77.702,
+    12.9931,
+    77.732
+  ],
+  "why": "Bengaluru ranked first of 10 Indian metros on OSM sites with >=2 mapped gates (2140) in an equal 0.30 deg box; zone = 3 km window with the most such sites (140 multi-gate, 174 gated, 223 sites)."
+}

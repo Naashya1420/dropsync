@@ -1,0 +1,20 @@
+{
+  "label": "Bengaluru study zone",
+  "bbox": [
+    12.9631,
+    77.702,
+    12.9931,
+    77.732
+  ],
+  "source": "india-261117.osm.pbf -> Bengaluru.osm.pbf",
+  "osm_timestamp": "2026-11-17T21:24:30Z",
+  "license": "\u00a9 OpenStreetMap contributors, ODbL 1.0 (via Geofabrik)",
+  "sites": 194,
+  "gates": 627,
+  "parking": 94,
+  "buildings": 5213,
+  "buildings_with_levels": 800,
+  "graph_nodes": 12408,
+  "graph_edges": 24967,
+  "restaurants": 218
+}

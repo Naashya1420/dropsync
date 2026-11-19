@@ -1,0 +1,65 @@
+{
+  "study": {
+    "city": "Bengaluru",
+    "label": "Bengaluru study zone",
+    "bbox": [
+      12.9631,
+      77.702,
+      12.9931,
+      77.732
+    ],
+    "why": "Bengaluru ranked first of 10 Indian metros on OSM sites with >=2 mapped gates (2140) in an equal 0.30 deg box; zone = 3 km window with the most such sites (140 multi-gate, 174 gated, 223 sites)."
+  },
+  "built_at": "2026-11-19T01:32:05+0530",
+  "sources": [
+    {
+      "name": "OpenStreetMap (Geofabrik India extract)",
+      "kind": "real",
+      "detail": {
+        "label": "Bengaluru study zone",
+        "bbox": [
+          12.9631,
+          77.702,
+          12.9931,
+          77.732
+        ],
+        "source": "india-261117.osm.pbf -> Bengaluru.osm.pbf",
+        "osm_timestamp": "2026-11-17T21:24:30Z",
+        "license": "\u00a9 OpenStreetMap contributors, ODbL 1.0 (via Geofabrik)",
+        "sites": 194,
+        "gates": 627,
+        "parking": 94,
+        "buildings": 5213,
+        "buildings_with_levels": 800,
+        "graph_nodes": 12408,
+        "graph_edges": 24967,
+        "restaurants": 218
+      }
+    },
+    {
+      "name": "OpenStreetMap public GPS traces",
+      "kind": "real",
+      "detail": {
+        "points": 670096,
+        "segments": 41236,
+        "use": "GPS noise calibration"
+      }
+    },
+    {
+      "name": "Simulated delivery history",
+      "kind": "simulated",
+      "detail": {
+        "trips": 15034,
+        "pings": 669716,
+        "sites": 151,
+        "days": 90
+      }
+    }
+  ],
+  "counts": {
+    "sites_with_profile": 151,
+    "sites_total": 194,
+    "shown_gate_hint": 99,
+    "shown_sync": 107
+  }
+}

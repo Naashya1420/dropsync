@@ -1,0 +1,182 @@
+{
+  "method": "Choose the study city by MEASURING OpenStreetMap coverage, not by preference.",
+  "half_box_deg": 0.15,
+  "source": "Geofabrik India extract",
+  "rows": [
+    {
+      "city": "Bengaluru",
+      "bbox": [
+        12.8381,
+        77.472,
+        13.1381,
+        77.772
+      ],
+      "sites": 3677,
+      "sites_all_kinds": 4909,
+      "sites_with_gate": 2862,
+      "sites_multi_gate": 2140,
+      "gates": 16685,
+      "bldg_levels": 13658,
+      "parking": 1374
+    },
+    {
+      "city": "Delhi",
+      "bbox": [
+        28.4528,
+        77.055,
+        28.7528,
+        77.355
+      ],
+      "sites": 2184,
+      "sites_all_kinds": 3054,
+      "sites_with_gate": 1753,
+      "sites_multi_gate": 1499,
+      "gates": 18808,
+      "bldg_levels": 8500,
+      "parking": 790
+    },
+    {
+      "city": "Mumbai",
+      "bbox": [
+        18.905,
+        72.7192,
+        19.205,
+        73.0192
+      ],
+      "sites": 1655,
+      "sites_all_kinds": 2054,
+      "sites_with_gate": 1272,
+      "sites_multi_gate": 1036,
+      "gates": 18408,
+      "bldg_levels": 5484,
+      "parking": 317
+    },
+    {
+      "city": "Pune",
+      "bbox": [
+        18.3714,
+        73.7045,
+        18.6714,
+        74.0045
+      ],
+      "sites": 1615,
+      "sites_all_kinds": 1855,
+      "sites_with_gate": 1296,
+      "sites_multi_gate": 980,
+      "gates": 13017,
+      "bldg_levels": 3610,
+      "parking": 342
+    },
+    {
+      "city": "Gurugram",
+      "bbox": [
+        28.3146,
+        76.8799,
+        28.6146,
+        77.1799
+      ],
+      "sites": 1160,
+      "sites_all_kinds": 1432,
+      "sites_with_gate": 821,
+      "sites_multi_gate": 709,
+      "gates": 7771,
+      "bldg_levels": 1700,
+      "parking": 330
+    },
+    {
+      "city": "Noida",
+      "bbox": [
+        28.3681,
+        77.2497,
+        28.6681,
+        77.5497
+      ],
+      "sites": 970,
+      "sites_all_kinds": 1339,
+      "sites_with_gate": 724,
+      "sites_multi_gate": 627,
+      "gates": 9102,
+      "bldg_levels": 2429,
+      "parking": 266
+    },
+    {
+      "city": "Hyderabad",
+      "bbox": [
+        17.2762,
+        78.2805,
+        17.5762,
+        78.5805
+      ],
+      "sites": 737,
+      "sites_all_kinds": 960,
+      "sites_with_gate": 575,
+      "sites_multi_gate": 448,
+      "gates": 11709,
+      "bldg_levels": 1753,
+      "parking": 319
+    },
+    {
+      "city": "Chennai",
+      "bbox": [
+        12.8936,
+        80.0834,
+        13.1936,
+        80.3834
+      ],
+      "sites": 501,
+      "sites_all_kinds": 1017,
+      "sites_with_gate": 376,
+      "sites_multi_gate": 270,
+      "gates": 8606,
+      "bldg_levels": 8038,
+      "parking": 230
+    },
+    {
+      "city": "Kolkata",
+      "bbox": [
+        22.3831,
+        88.2006,
+        22.6831,
+        88.5006
+      ],
+      "sites": 218,
+      "sites_all_kinds": 392,
+      "sites_with_gate": 165,
+      "sites_multi_gate": 138,
+      "gates": 4727,
+      "bldg_levels": 1718,
+      "parking": 126
+    },
+    {
+      "city": "Ahmedabad",
+      "bbox": [
+        22.8715,
+        72.43,
+        23.1715,
+        72.73
+      ],
+      "sites": 243,
+      "sites_all_kinds": 317,
+      "sites_with_gate": 140,
+      "sites_multi_gate": 85,
+      "gates": 8118,
+      "bldg_levels": 20763,
+      "parking": 73
+    }
+  ],
+  "chosen": {
+    "city": "Bengaluru",
+    "zone_bbox": [
+      12.9631,
+      77.702,
+      12.9931,
+      77.732
+    ],
+    "zone_stats": {
+      "sites_multi_gate": 140,
+      "sites_with_gate": 174,
+      "sites": 223
+    },
+    "why": "Bengaluru ranked first of 10 Indian metros on OSM sites with >=2 mapped gates (2140) in an equal 0.30 deg box; zone = 3 km window with the most such sites (140 multi-gate, 174 gated, 223 sites)."
+  }
+}

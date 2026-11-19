@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+web/node_modules/
+web/dist/
+data/raw/
+data/traces/*.csv
+data/osm/*/_cache/
+data/osm/*/area.osm.pbf
+data/out/sync_feedback.jsonl
+data/out/hint_feedback.jsonl
+data/field/trip_*.json

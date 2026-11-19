@@ -1,0 +1,31 @@
+{
+  "source": "OpenStreetMap public GPS traces (real, India), study area Bengaluru study zone",
+  "raw_points": 670096,
+  "cleaned_points": 669599,
+  "segments": 41236,
+  "years": [
+    2023,
+    2026
+  ],
+  "spike_rate": 0.0007,
+  "sampling_interval_s": {
+    "median": 15.0,
+    "p90": 20.0,
+    "share_le_5s": 0.3379177322662219
+  },
+  "stops_detected": 10220,
+  "stationary": {
+    "n_fixes": 138784,
+    "radial_median_m": 3.1277583048450817,
+    "radial_p95_m": 17.906067726650804,
+    "sigma_per_axis_m": 5.62,
+    "lag1_autocorr": 0.816,
+    "rho_per_s": 0.9866
+  },
+  "cross_track": {
+    "n_fixes": 437031,
+    "median_m": 2.04689908321183,
+    "p90_m": 5.353108101006999,
+    "p95_m": 6.7067529917163835
+  }
+}

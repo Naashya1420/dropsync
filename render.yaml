@@ -1,0 +1,13 @@
+# Render Blueprint: one free web service built from the Dockerfile.
+# In the Render dashboard: New + → Blueprint → pick this repo → set DROPSYNC_PASSCODE.
+services:
+  - type: web
+    name: dropsync
+    runtime: docker
+    plan: free
+    region: singapore
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: DROPSYNC_PASSCODE
+        sync: false        # you type the passcode in the dashboard; it is not stored in git

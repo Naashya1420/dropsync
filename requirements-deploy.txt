@@ -1,0 +1,7 @@
+# Runtime-only dependencies for the deployed demo server (no geo/pipeline stack).
+fastapi==0.164.0
+uvicorn[standard]==0.54.0
+networkx==3.7
+numpy==2.5.5
+pydantic==2.14.3
+python-multipart==0.0.34

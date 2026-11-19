@@ -1,0 +1,14 @@
+# PostGIS building-profile store (PDF 4.1). Optional: the API falls back to data/out/profiles.json.
+services:
+  postgis:
+    image: postgis/postgis:17-3.5
+    environment:
+      POSTGRES_USER: dropsync
+      POSTGRES_PASSWORD: dropsync
+      POSTGRES_DB: dropsync
+    ports:
+      - "5433:5432"
+    volumes:
+      - dropsync_pg:/var/lib/postgresql/data
+volumes:
+  dropsync_pg:

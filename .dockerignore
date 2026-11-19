@@ -1,0 +1,14 @@
+.venv
+**/node_modules
+web/dist
+**/__pycache__
+data/raw
+data/sim
+data/traces
+data/osm/*/_cache
+data/osm/*/area.osm.pbf
+data/out/*.jsonl
+data/field
+docker
+tests
+*.md

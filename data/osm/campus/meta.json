@@ -1,0 +1,19 @@
+{
+  "label": "IIIT Allahabad campus (field trial)",
+  "bbox": [
+    25.425,
+    81.764,
+    25.435,
+    81.779
+  ],
+  "source": "india-261117.osm.pbf -> campus_iiita.osm.pbf",
+  "osm_timestamp": "2026-11-17T21:24:30Z",
+  "license": "\u00a9 OpenStreetMap contributors, ODbL 1.0 (via Geofabrik)",
+  "sites": 2,
+  "gates": 0,
+  "parking": 0,
+  "buildings": 3489,
+  "buildings_with_levels": 2,
+  "graph_nodes": 957,
+  "graph_edges": 1964
+}
