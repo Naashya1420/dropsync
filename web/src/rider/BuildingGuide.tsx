@@ -1,6 +1,6 @@
 import type { OrderSnap } from '../api'
 import { dict, fmtDur, type Lang } from './i18n'
-import { IcBuilding, IcGate, IcHandover, IcParking } from './icons'
+import { IcBuilding, IcGate, IcHandover, IcNav, IcParking } from './icons'
 
 export function custStatus(snap: OrderSnap, lang: Lang): { text: string; tone: string } {
   const t = dict[lang]
@@ -82,6 +82,17 @@ export default function BuildingGuide({ snap, lang }: { snap: OrderSnap; lang: L
           <div className="zval">{p.parking ? t.learnedParking : t.parkByGate}</div>
         </div>
       </div>
+      {snap.block && snap.handover_type !== 'gate' && (
+        <div className="zrow">
+          <IcNav size={20} />
+          <div>
+            <div className="zlbl">{t.yourBlock}</div>
+            <div className="zval">{snap.block.name || t.blockUnnamed(snap.block.index)}{snap.block.levels ? ` · ${t.floors(snap.block.levels)}` : ''}</div>
+            {snap.block.walk_m != null && <div className="zsub">{t.walkFromGate(Math.round(snap.block.walk_m), Math.max(1, Math.round(snap.block.walk_m / 1.2 / 60)))}{snap.block.mapped ? '' : ` · ${t.walkApprox}`}</div>}
+            <div className="zsub">{snap.block.door_learned ? t.doorLearned(snap.block.door_trips) : t.doorFromMap}</div>
+          </div>
+        </div>
+      )}
       <div className="zrow">
         <IcHandover size={20} />
         <div>

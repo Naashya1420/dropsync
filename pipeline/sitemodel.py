@@ -55,6 +55,7 @@ class Tower:
     footprint: object  # shapely polygon (metric)
     entrance_x: float = 0.0
     entrance_y: float = 0.0
+    name: str | None = None      # block name / number from OSM, when mapped
 
 
 @dataclass
@@ -92,6 +93,8 @@ class World:
             g["px"], g["py"] = self.proj.to_xy(g["lon"], g["lat"])
         self.buildings = json.loads((osm_dir / "buildings.json").read_text())
         self.parking = json.loads((osm_dir / "parking.json").read_text())
+        lp = osm_dir / "building_labels.json"
+        self.labels = json.loads(lp.read_text()) if lp.exists() else {}
         self._to_m = lambda geom: shp_transform(lambda x, y, z=None: self.proj.to_xy(x, y), geom)
         # drivable + walkable subgraphs (undirected for routing: two-wheelers
         # in Indian cities use service lanes both ways; one-way handling is out of scope)
@@ -217,7 +220,8 @@ class World:
             if not site.poly.contains(c) or p.area < 120:  # skip sheds / guard rooms
                 continue
             lat, lon = self.ll(c.x, c.y)
-            out.append(Tower(f"{site.site_id}#t{len(out)}", c.x, c.y, lat, lon, meta.get("levels"), p))
+            out.append(Tower(f"{site.site_id}#t{len(out)}", c.x, c.y, lat, lon, meta.get("levels"), p,
+                             name=self.block_label(meta.get("osm_id"), site.name)))
         if not out:
             c = site.poly.representative_point()
             lat, lon = self.ll(c.x, c.y)
@@ -229,6 +233,38 @@ class World:
             ep, _ = nearest_points(t.footprint.exterior, Point(nx_, ny_))
             t.entrance_x, t.entrance_y = ep.x, ep.y
         return out
+
+    def block_label(self, osm_id, site_name=None) -> str | None:
+        """'Tower C' / 'B-Wing' / 'No. 12' from OSM tags, when the building is labelled."""
+        t = self.labels.get(osm_id or "", {})
+        for k in ("name", "building:name", "addr:housename"):
+            v = (t.get(k) or "").strip()
+            if v and v != site_name:
+                return v
+        if t.get("addr:housenumber"):
+            return f"No. {t['addr:housenumber'].strip()}"
+        if t.get("ref"):
+            return t["ref"].strip()
+        return None
+
+    def inside_route(self, site: "Site", from_node, to_xy):
+        """Walking route inside the site (mapped internal paths and roads) from a gate's
+        inner node to a block entrance. Returns ([(x, y)...], metres, mapped: bool)."""
+        nodes = self.inside_nodes(site)
+        key = ("walksub", site.site_id)
+        if key not in self._inside_cache:
+            self._inside_cache[key] = self.walk.subgraph(nodes)
+        sub = self._inside_cache[key]
+        if from_node in sub and nodes:
+            to = self.nearest_walk_node(*to_xy, within=nodes)
+            try:
+                path = nx.shortest_path(sub, from_node, to, weight="length")
+                pts = self.path_xy(path) + [to_xy]
+                return pts, sum(math.dist(pts[i], pts[i + 1]) for i in range(len(pts) - 1)), True
+            except (nx.NetworkXNoPath, nx.NodeNotFound):
+                pass
+        a = self.node_xy(from_node)
+        return [a, to_xy], math.dist(a, to_xy) * 1.3, False
 
     def nearest_walk_node(self, x, y, within=None):
         if within is None:
@@ -292,6 +328,22 @@ def site_summary(site: Site, world: World) -> dict:
                             road=world.road_name_near(a.out_node))
                        for a in site.aps],
         towers=[dict(tower_id=t.tower_id, lat=round(t.lat, 6), lon=round(t.lon, 6), levels=t.levels,
-                     entrance=list(world.ll(t.entrance_x, t.entrance_y)))
+                     entrance=list(world.ll(t.entrance_x, t.entrance_y)), name=t.name,
+                     routes=_routes(site, world, t))
                 for t in site.towers],
     )
+
+
+def _routes(site: Site, world: World, t: Tower) -> dict:
+    """Walking route from each entrance to this block's entrance, inside the site."""
+    out = {}
+    for a in site.aps:
+        pts, m, mapped = world.inside_route(site, a.in_node, (t.entrance_x, t.entrance_y))
+        pts = [(a.x, a.y)] + pts
+        if len(pts) > 30:  # keep the payload small
+            idx = np.linspace(0, len(pts) - 1, 30).astype(int)
+            pts = [pts[i] for i in idx]
+        ll = [world.ll(x, y) for x, y in pts]
+        out[a.ap_id] = dict(m=round(m + math.dist((a.x, a.y), world.node_xy(a.in_node))), mapped=mapped,
+                            path=[[round(la, 6), round(lo, 6)] for la, lo in ll])
+    return out

@@ -183,6 +183,15 @@ def site_profile(site_id: str):
     return dict(site=SITES[site_id], profile=PROFILES.get(site_id))
 
 
+@app.get("/api/lab")
+def lab():
+    """Learning-stages demo data (pipeline/lab.py)."""
+    f = OUT / "lab.json"
+    if not f.exists():
+        raise HTTPException(404, "lab data not built: python -m pipeline.lab")
+    return FileResponse(f, media_type="application/json")
+
+
 @app.get("/api/metrics")
 def metrics():
     return dict(

@@ -106,6 +106,9 @@ export default function RiderMap({ snap, home, bottomFrac, dark = false }: { sna
                   <Tooltip direction="left" className="map-label">P</Tooltip>
                 </CircleMarker>
               )}
+              {snap.inside_route?.length > 1 && (
+                <Polyline positions={snap.inside_route} pathOptions={{ color: '#2563eb', weight: 4, dashArray: '1 7', lineCap: 'round' }} />
+              )}
               <Marker position={snap.handover_point} icon={dropIcon} />
             </>
           )}

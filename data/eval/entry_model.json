@@ -1,0 +1,111 @@
+{
+  "what": "Trip-level gate reading (entry gate / refused gate) learned from augmented simulated trips",
+  "training": {
+    "trips": 10320,
+    "rows": 30000,
+    "buildings": 43,
+    "configs": "6 randomised configs: GPS noise 0.7-2x measured, pings 5-30 s, 30-70% first-time riders, 0-60% wrong-gate riders let in, 20-60% buildings with a gate change"
+  },
+  "held_out_buildings": 24,
+  "results": [
+    {
+      "condition": "normal (measured noise, 15 s pings)",
+      "rules": {
+        "trips": 960,
+        "entry_accuracy": 0.7625,
+        "detour_trips": 87,
+        "detour_entry_accuracy": 0.6897,
+        "refusal_precision": 0.3714,
+        "refusal_recall": 0.5977
+      },
+      "ml": {
+        "trips": 960,
+        "entry_accuracy": 0.8854,
+        "detour_trips": 87,
+        "detour_entry_accuracy": 0.8046,
+        "refusal_precision": 0.4815,
+        "refusal_recall": 0.8966
+      }
+    },
+    {
+      "condition": "many first-time riders + gate closures",
+      "rules": {
+        "trips": 960,
+        "entry_accuracy": 0.6917,
+        "detour_trips": 274,
+        "detour_entry_accuracy": 0.6204,
+        "refusal_precision": 0.6812,
+        "refusal_recall": 0.5693
+      },
+      "ml": {
+        "trips": 960,
+        "entry_accuracy": 0.8542,
+        "detour_trips": 274,
+        "detour_entry_accuracy": 0.7664,
+        "refusal_precision": 0.7867,
+        "refusal_recall": 0.8212
+      }
+    },
+    {
+      "condition": "2x GPS noise",
+      "rules": {
+        "trips": 960,
+        "entry_accuracy": 0.6615,
+        "detour_trips": 152,
+        "detour_entry_accuracy": 0.5855,
+        "refusal_precision": 0.6067,
+        "refusal_recall": 0.3553
+      },
+      "ml": {
+        "trips": 960,
+        "entry_accuracy": 0.7969,
+        "detour_trips": 152,
+        "detour_entry_accuracy": 0.5658,
+        "refusal_precision": 0.6348,
+        "refusal_recall": 0.7434
+      }
+    },
+    {
+      "condition": "sparse pings (30 s)",
+      "rules": {
+        "trips": 960,
+        "entry_accuracy": 0.5427,
+        "detour_trips": 139,
+        "detour_entry_accuracy": 0.5899,
+        "refusal_precision": 0.4121,
+        "refusal_recall": 0.4892
+      },
+      "ml": {
+        "trips": 960,
+        "entry_accuracy": 0.8229,
+        "detour_trips": 139,
+        "detour_entry_accuracy": 0.7338,
+        "refusal_precision": 0.5515,
+        "refusal_recall": 0.7698
+      }
+    }
+  ],
+  "features": [
+    "min_d",
+    "min_d_outside",
+    "n_inside_near",
+    "max_depth_near",
+    "n_near30",
+    "stop_near_s",
+    "first_near_rank",
+    "last_near_to_deep_s",
+    "visited_before_deep",
+    "dist_to_first_deep",
+    "frac_inside_after_visit",
+    "dist_final_stop",
+    "speed_after_visit",
+    "frac_time_near",
+    "osm_gate",
+    "n_aps",
+    "ping_interval_s",
+    "median_acc",
+    "has_deep",
+    "near_is_last_before_deep"
+  ],
+  "seconds": 140
+}

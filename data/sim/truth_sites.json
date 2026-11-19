@@ -601,7 +601,7 @@
     "levels_from_osm": true
    }
   },
-  "n_candidate_gates": 3
+  "n_candidate_gates": 2
  },
  "way/94685714": {
   "site_id": "way/94685714",
@@ -1558,11 +1558,11 @@
  "way/122737532": {
   "site_id": "way/122737532",
   "day_gate": "way/122737532#ap3",
-  "night_gate": "way/122737532#ap4",
+  "night_gate": "way/122737532#ap0",
   "changed_gate": null,
   "change_day": null,
   "handover_type": "doorstep",
-  "park_inside": true,
+  "park_inside": false,
   "towers": {
    "way/122737532#t0": {
     "levels": 19.0,
@@ -1577,7 +1577,7 @@
     "levels_from_osm": true
    },
    "way/122737532#t3": {
-    "levels": 6.0,
+    "levels": 22.0,
     "levels_from_osm": false
    },
    "way/122737532#t4": {
@@ -1589,7 +1589,7 @@
     "levels_from_osm": true
    },
    "way/122737532#t6": {
-    "levels": 20.0,
+    "levels": 5.0,
     "levels_from_osm": false
    },
    "way/122737532#t7": {
@@ -1605,7 +1605,7 @@
     "levels_from_osm": true
    }
   },
-  "n_candidate_gates": 5
+  "n_candidate_gates": 2
  },
  "way/122738032": {
   "site_id": "way/122738032",
@@ -2333,7 +2333,7 @@
     "levels_from_osm": false
    }
   },
-  "n_candidate_gates": 5
+  "n_candidate_gates": 2
  },
  "way/181466412": {
   "site_id": "way/181466412",
@@ -2353,7 +2353,7 @@
  },
  "way/181695461": {
   "site_id": "way/181695461",
-  "day_gate": "way/181695461#ap1",
+  "day_gate": "way/181695461#ap2",
   "night_gate": "way/181695461#ap3",
   "changed_gate": null,
   "change_day": null,
@@ -2393,7 +2393,7 @@
     "levels_from_osm": false
    }
   },
-  "n_candidate_gates": 4
+  "n_candidate_gates": 3
  },
  "way/181699297": {
   "site_id": "way/181699297",
@@ -2429,7 +2429,7 @@
   "night_gate": "way/185977461#ap0",
   "changed_gate": null,
   "change_day": null,
-  "handover_type": "gate",
+  "handover_type": "lobby",
   "park_inside": false,
   "towers": {
    "way/185977461#t0": {
@@ -2437,7 +2437,7 @@
     "levels_from_osm": true
    }
   },
-  "n_candidate_gates": 2
+  "n_candidate_gates": 1
  },
  "way/187765472": {
   "site_id": "way/187765472",
@@ -2653,51 +2653,51 @@
  },
  "way/259063320": {
   "site_id": "way/259063320",
-  "day_gate": "way/259063320#ap2",
-  "night_gate": "way/259063320#ap2",
-  "changed_gate": "way/259063320#ap1",
+  "day_gate": "way/259063320#ap1",
+  "night_gate": "way/259063320#ap1",
+  "changed_gate": "way/259063320#ap0",
   "change_day": 60,
-  "handover_type": "doorstep",
+  "handover_type": "lobby",
   "park_inside": false,
   "towers": {
    "way/259063320#t0": {
-    "levels": 14.0,
+    "levels": 9.0,
     "levels_from_osm": false
    },
    "way/259063320#t1": {
-    "levels": 13.0,
-    "levels_from_osm": false
-   },
-   "way/259063320#t2": {
     "levels": 11.0,
     "levels_from_osm": false
    },
+   "way/259063320#t2": {
+    "levels": 13.0,
+    "levels_from_osm": false
+   },
    "way/259063320#t3": {
-    "levels": 12.0,
+    "levels": 11.0,
     "levels_from_osm": false
    },
    "way/259063320#t4": {
-    "levels": 6.0,
+    "levels": 12.0,
     "levels_from_osm": false
    },
    "way/259063320#t5": {
-    "levels": 14.0,
+    "levels": 6.0,
     "levels_from_osm": false
    },
    "way/259063320#t6": {
-    "levels": 8.0,
+    "levels": 14.0,
     "levels_from_osm": false
    },
    "way/259063320#t7": {
-    "levels": 4.0,
+    "levels": 8.0,
     "levels_from_osm": false
    },
    "way/259063320#t8": {
-    "levels": 8.0,
+    "levels": 4.0,
     "levels_from_osm": false
    }
   },
-  "n_candidate_gates": 3
+  "n_candidate_gates": 2
  },
  "way/259181617": {
   "site_id": "way/259181617",
@@ -2893,27 +2893,27 @@
   "night_gate": "way/322896805#ap0",
   "changed_gate": null,
   "change_day": null,
-  "handover_type": "gate",
+  "handover_type": "lobby",
   "park_inside": false,
   "towers": {
    "way/322896805#t0": {
-    "levels": 4.0,
+    "levels": 3.0,
     "levels_from_osm": false
    },
    "way/322896805#t1": {
-    "levels": 8.0,
+    "levels": 5.0,
     "levels_from_osm": false
    },
    "way/322896805#t2": {
-    "levels": 13.0,
+    "levels": 4.0,
     "levels_from_osm": false
    },
    "way/322896805#t3": {
-    "levels": 7.0,
+    "levels": 8.0,
     "levels_from_osm": false
    }
   },
-  "n_candidate_gates": 2
+  "n_candidate_gates": 1
  },
  "way/352481876": {
   "site_id": "way/352481876",
@@ -3638,7 +3638,7 @@
  "way/414833858": {
   "site_id": "way/414833858",
   "day_gate": "way/414833858#ap8",
-  "night_gate": "way/414833858#ap5",
+  "night_gate": "way/414833858#ap3",
   "changed_gate": null,
   "change_day": null,
   "handover_type": "gate",
@@ -3689,7 +3689,7 @@
     "levels_from_osm": false
    }
   },
-  "n_candidate_gates": 11
+  "n_candidate_gates": 8
  },
  "way/414836208": {
   "site_id": "way/414836208",
@@ -4013,7 +4013,7 @@
     "levels_from_osm": false
    }
   },
-  "n_candidate_gates": 3
+  "n_candidate_gates": 2
  },
  "way/698147979": {
   "site_id": "way/698147979",
@@ -4089,8 +4089,8 @@
  },
  "way/732010482": {
   "site_id": "way/732010482",
-  "day_gate": "way/732010482#ap3",
-  "night_gate": "way/732010482#ap3",
+  "day_gate": "way/732010482#ap1",
+  "night_gate": "way/732010482#ap1",
   "changed_gate": null,
   "change_day": null,
   "handover_type": "gate",
@@ -4161,7 +4161,7 @@
     "levels_from_osm": true
    }
   },
-  "n_candidate_gates": 4
+  "n_candidate_gates": 2
  },
  "way/766720330": {
   "site_id": "way/766720330",
@@ -4237,159 +4237,159 @@
  },
  "way/804883138": {
   "site_id": "way/804883138",
-  "day_gate": "way/804883138#ap2",
-  "night_gate": "way/804883138#ap2",
+  "day_gate": "way/804883138#ap1",
+  "night_gate": "way/804883138#ap1",
   "changed_gate": null,
   "change_day": null,
-  "handover_type": "lobby",
-  "park_inside": false,
+  "handover_type": "doorstep",
+  "park_inside": true,
   "towers": {
    "way/804883138#t0": {
-    "levels": 21.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t1": {
-    "levels": 14.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t2": {
-    "levels": 17.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t3": {
-    "levels": 16.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t4": {
-    "levels": 8.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t5": {
-    "levels": 13.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t6": {
-    "levels": 16.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t7": {
-    "levels": 11.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t8": {
-    "levels": 10.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t9": {
     "levels": 18.0,
     "levels_from_osm": false
    },
-   "way/804883138#t10": {
-    "levels": 17.0,
+   "way/804883138#t1": {
+    "levels": 7.0,
     "levels_from_osm": false
    },
-   "way/804883138#t11": {
-    "levels": 8.0,
+   "way/804883138#t2": {
+    "levels": 18.0,
     "levels_from_osm": false
    },
-   "way/804883138#t12": {
-    "levels": 12.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t13": {
-    "levels": 17.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t14": {
-    "levels": 6.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t15": {
-    "levels": 17.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t16": {
-    "levels": 10.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t17": {
-    "levels": 10.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t18": {
-    "levels": 10.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t19": {
-    "levels": 19.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t20": {
-    "levels": 16.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t21": {
-    "levels": 13.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t22": {
-    "levels": 4.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t23": {
-    "levels": 9.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t24": {
-    "levels": 22.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t25": {
-    "levels": 6.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t26": {
-    "levels": 5.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t27": {
-    "levels": 12.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t28": {
+   "way/804883138#t3": {
     "levels": 20.0,
     "levels_from_osm": false
    },
-   "way/804883138#t29": {
-    "levels": 8.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t30": {
-    "levels": 16.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t31": {
-    "levels": 17.0,
-    "levels_from_osm": false
-   },
-   "way/804883138#t32": {
+   "way/804883138#t4": {
     "levels": 21.0,
     "levels_from_osm": false
    },
-   "way/804883138#t33": {
+   "way/804883138#t5": {
+    "levels": 14.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t6": {
+    "levels": 17.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t7": {
+    "levels": 16.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t8": {
+    "levels": 8.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t9": {
+    "levels": 13.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t10": {
+    "levels": 16.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t11": {
+    "levels": 11.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t12": {
+    "levels": 10.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t13": {
+    "levels": 18.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t14": {
+    "levels": 17.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t15": {
+    "levels": 8.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t16": {
     "levels": 12.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t17": {
+    "levels": 17.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t18": {
+    "levels": 6.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t19": {
+    "levels": 17.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t20": {
+    "levels": 10.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t21": {
+    "levels": 10.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t22": {
+    "levels": 10.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t23": {
+    "levels": 19.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t24": {
+    "levels": 16.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t25": {
+    "levels": 13.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t26": {
+    "levels": 4.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t27": {
+    "levels": 9.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t28": {
+    "levels": 22.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t29": {
+    "levels": 6.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t30": {
+    "levels": 5.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t31": {
+    "levels": 12.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t32": {
+    "levels": 20.0,
+    "levels_from_osm": false
+   },
+   "way/804883138#t33": {
+    "levels": 8.0,
     "levels_from_osm": false
    },
    "way/804883138#t34": {
-    "levels": 12.0,
+    "levels": 16.0,
     "levels_from_osm": false
    },
    "way/804883138#t35": {
-    "levels": 9.0,
+    "levels": 17.0,
     "levels_from_osm": false
    }
   },
-  "n_candidate_gates": 2
+  "n_candidate_gates": 1
  },
  "way/886184260": {
   "site_id": "way/886184260",
@@ -4825,19 +4825,19 @@
   "night_gate": "way/1135846658#ap0",
   "changed_gate": null,
   "change_day": null,
-  "handover_type": "gate",
-  "park_inside": false,
+  "handover_type": "lobby",
+  "park_inside": true,
   "towers": {
    "way/1135846658#t0": {
     "levels": 5.0,
     "levels_from_osm": true
    },
    "way/1135846658#t1": {
-    "levels": 7.0,
+    "levels": 13.0,
     "levels_from_osm": false
    }
   },
-  "n_candidate_gates": 2
+  "n_candidate_gates": 1
  },
  "way/1135850909": {
   "site_id": "way/1135850909",
@@ -4958,7 +4958,7 @@
  "way/1144281242": {
   "site_id": "way/1144281242",
   "day_gate": "way/1144281242#ap0",
-  "night_gate": "way/1144281242#ap1",
+  "night_gate": "way/1144281242#ap0",
   "changed_gate": null,
   "change_day": null,
   "handover_type": "lobby",
@@ -4969,7 +4969,7 @@
     "levels_from_osm": true
    }
   },
-  "n_candidate_gates": 2
+  "n_candidate_gates": 1
  },
  "way/1144281253": {
   "site_id": "way/1144281253",
@@ -5229,87 +5229,87 @@
  },
  "way/1267846119": {
   "site_id": "way/1267846119",
-  "day_gate": "way/1267846119#ap1",
+  "day_gate": "way/1267846119#ap0",
   "night_gate": "way/1267846119#ap0",
   "changed_gate": null,
   "change_day": null,
-  "handover_type": "doorstep",
+  "handover_type": "lobby",
   "park_inside": true,
   "towers": {
    "way/1267846119#t0": {
-    "levels": 4.0,
+    "levels": 5.0,
     "levels_from_osm": false
    },
    "way/1267846119#t1": {
-    "levels": 9.0,
+    "levels": 18.0,
     "levels_from_osm": false
    },
    "way/1267846119#t2": {
-    "levels": 4.0,
+    "levels": 19.0,
     "levels_from_osm": false
    },
    "way/1267846119#t3": {
-    "levels": 5.0,
+    "levels": 11.0,
     "levels_from_osm": false
    },
    "way/1267846119#t4": {
-    "levels": 16.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t5": {
-    "levels": 14.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t6": {
-    "levels": 6.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t7": {
-    "levels": 12.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t8": {
     "levels": 4.0,
     "levels_from_osm": false
    },
-   "way/1267846119#t9": {
-    "levels": 20.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t10": {
-    "levels": 5.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t11": {
-    "levels": 8.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t12": {
-    "levels": 7.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t13": {
-    "levels": 14.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t14": {
-    "levels": 22.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t15": {
-    "levels": 22.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t16": {
-    "levels": 13.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t17": {
+   "way/1267846119#t5": {
     "levels": 9.0,
     "levels_from_osm": false
    },
+   "way/1267846119#t6": {
+    "levels": 4.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t7": {
+    "levels": 5.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t8": {
+    "levels": 16.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t9": {
+    "levels": 14.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t10": {
+    "levels": 6.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t11": {
+    "levels": 12.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t12": {
+    "levels": 4.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t13": {
+    "levels": 20.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t14": {
+    "levels": 5.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t15": {
+    "levels": 8.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t16": {
+    "levels": 7.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t17": {
+    "levels": 14.0,
+    "levels_from_osm": false
+   },
    "way/1267846119#t18": {
-    "levels": 19.0,
+    "levels": 22.0,
     "levels_from_osm": false
    },
    "way/1267846119#t19": {
@@ -5317,75 +5317,75 @@
     "levels_from_osm": false
    },
    "way/1267846119#t20": {
-    "levels": 8.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t21": {
-    "levels": 7.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t22": {
-    "levels": 15.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t23": {
-    "levels": 16.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t24": {
-    "levels": 10.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t25": {
-    "levels": 5.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t26": {
-    "levels": 11.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t27": {
-    "levels": 17.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t28": {
-    "levels": 17.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t29": {
     "levels": 13.0,
     "levels_from_osm": false
    },
-   "way/1267846119#t30": {
-    "levels": 10.0,
+   "way/1267846119#t21": {
+    "levels": 9.0,
     "levels_from_osm": false
    },
-   "way/1267846119#t31": {
-    "levels": 7.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t32": {
-    "levels": 10.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t33": {
-    "levels": 17.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t34": {
+   "way/1267846119#t22": {
     "levels": 19.0,
     "levels_from_osm": false
    },
-   "way/1267846119#t35": {
-    "levels": 14.0,
+   "way/1267846119#t23": {
+    "levels": 22.0,
     "levels_from_osm": false
    },
-   "way/1267846119#t36": {
+   "way/1267846119#t24": {
+    "levels": 8.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t25": {
     "levels": 7.0,
     "levels_from_osm": false
    },
-   "way/1267846119#t37": {
+   "way/1267846119#t26": {
+    "levels": 15.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t27": {
+    "levels": 16.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t28": {
     "levels": 10.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t29": {
+    "levels": 5.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t30": {
+    "levels": 11.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t31": {
+    "levels": 17.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t32": {
+    "levels": 17.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t33": {
+    "levels": 13.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t34": {
+    "levels": 10.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t35": {
+    "levels": 7.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t36": {
+    "levels": 10.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t37": {
+    "levels": 17.0,
     "levels_from_osm": false
    },
    "way/1267846119#t38": {
@@ -5397,107 +5397,107 @@
     "levels_from_osm": false
    },
    "way/1267846119#t40": {
-    "levels": 19.0,
+    "levels": 7.0,
     "levels_from_osm": false
    },
    "way/1267846119#t41": {
-    "levels": 12.0,
+    "levels": 10.0,
     "levels_from_osm": false
    },
    "way/1267846119#t42": {
-    "levels": 4.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t43": {
-    "levels": 20.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t44": {
-    "levels": 8.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t45": {
-    "levels": 17.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t46": {
-    "levels": 12.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t47": {
-    "levels": 17.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t48": {
-    "levels": 14.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t49": {
-    "levels": 18.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t50": {
-    "levels": 20.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t51": {
-    "levels": 20.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t52": {
-    "levels": 20.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t53": {
-    "levels": 14.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t54": {
-    "levels": 9.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t55": {
-    "levels": 22.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t56": {
-    "levels": 9.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t57": {
-    "levels": 17.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t58": {
-    "levels": 22.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t59": {
-    "levels": 6.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t60": {
-    "levels": 16.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t61": {
-    "levels": 15.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t62": {
-    "levels": 12.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t63": {
-    "levels": 8.0,
-    "levels_from_osm": false
-   },
-   "way/1267846119#t64": {
     "levels": 19.0,
     "levels_from_osm": false
    },
-   "way/1267846119#t65": {
+   "way/1267846119#t43": {
+    "levels": 14.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t44": {
+    "levels": 19.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t45": {
+    "levels": 12.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t46": {
+    "levels": 4.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t47": {
+    "levels": 20.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t48": {
+    "levels": 8.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t49": {
+    "levels": 17.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t50": {
+    "levels": 12.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t51": {
+    "levels": 17.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t52": {
+    "levels": 14.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t53": {
     "levels": 18.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t54": {
+    "levels": 20.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t55": {
+    "levels": 20.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t56": {
+    "levels": 20.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t57": {
+    "levels": 14.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t58": {
+    "levels": 9.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t59": {
+    "levels": 22.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t60": {
+    "levels": 9.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t61": {
+    "levels": 17.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t62": {
+    "levels": 22.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t63": {
+    "levels": 6.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t64": {
+    "levels": 16.0,
+    "levels_from_osm": false
+   },
+   "way/1267846119#t65": {
+    "levels": 15.0,
     "levels_from_osm": false
    },
    "way/1267846119#t66": {
@@ -5505,19 +5505,19 @@
     "levels_from_osm": false
    },
    "way/1267846119#t67": {
-    "levels": 12.0,
+    "levels": 8.0,
     "levels_from_osm": false
    },
    "way/1267846119#t68": {
-    "levels": 16.0,
+    "levels": 19.0,
     "levels_from_osm": false
    },
    "way/1267846119#t69": {
-    "levels": 9.0,
+    "levels": 18.0,
     "levels_from_osm": false
    }
   },
-  "n_candidate_gates": 2
+  "n_candidate_gates": 1
  },
  "way/1303625850": {
   "site_id": "way/1303625850",

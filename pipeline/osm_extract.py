@@ -165,6 +165,29 @@ def extract_pois(area_pbf: Path, out_dir: Path) -> int:
     return len(h.pois)
 
 
+class _LabelCollector(osmium.SimpleHandler):
+    """Block names / numbers of buildings (for 'Tower C', 'B-Wing', 'No. 12')."""
+    KEYS = ("name", "building:name", "addr:housename", "addr:housenumber", "ref")
+
+    def __init__(self):
+        super().__init__()
+        self.rows = {}
+
+    def way(self, w):
+        if "building" in w.tags:
+            d = {k: w.tags.get(k) for k in self.KEYS if w.tags.get(k)}
+            if d:
+                self.rows[f"way/{w.id}"] = d
+
+
+def extract_building_labels(area_pbf: Path, out_dir: Path) -> int:
+    h = _LabelCollector()
+    h.apply_file(str(area_pbf))
+    (out_dir / "building_labels.json").write_text(json.dumps(h.rows))
+    print(f"[osm] buildings with a name / house name / number: {len(h.rows)}")
+    return len(h.rows)
+
+
 def extract(src_pbf: Path, area_bbox, out_dir: Path, label: str) -> dict:
     s, w, n, e = area_bbox
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -187,6 +210,7 @@ def extract(src_pbf: Path, area_bbox, out_dir: Path, label: str) -> dict:
             keep_idx.append(i)
     sites = [h.sites[i] for i in sorted(keep_idx)]
     n_pois = extract_pois(area_pbf, out_dir)
+    extract_building_labels(area_pbf, out_dir)
     print(f"[osm] sites {len(sites)} (of {len(h.sites)} candidates), gates {len(h.gates)}, "
           f"parking {len(h.parking)}, buildings {len(h.buildings)}")
     (out_dir / "sites.json").write_text(json.dumps(sites))
@@ -232,7 +256,12 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--campus", action="store_true", help="extract the IIIT Allahabad field-trial area")
     ap.add_argument("--pois-only", action="store_true", help="only (re)extract restaurants from area.osm.pbf")
+    ap.add_argument("--labels-only", action="store_true", help="only (re)extract building names/numbers")
     a = ap.parse_args()
+    if a.labels_only:
+        d = OSM_DIR / ("campus" if a.campus else "city")
+        extract_building_labels(d / "area.osm.pbf", d)
+        return
     if a.pois_only:
         d = OSM_DIR / ("campus" if a.campus else "city")
         n = extract_pois(d / "area.osm.pbf", d)

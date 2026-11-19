@@ -12,8 +12,20 @@ Steps (PDF 4.1):
   3. gate & entry inference    -> boundary crossing of each trip, DBSCAN, snap to OSM access point
   4. handover-type inference   -> GPS gap before 'delivered' + where the final stop is
   5. time-of-day split         -> separate night (23:00-06:00) gate when evidence differs
-  6. confidence gate           -> trips, agreement, 'is it faster' check
+  6. confidence gate           -> probability that the gate is right (Bayesian), 'is it faster' check
 Recency weighting (PDF 4.6 'old evidence decays'): weight = 0.5 ** (age_days / HALF_LIFE_DAYS).
+
+Learning with very few trips (v2):
+  * An ENTRY counts only if the rider goes clearly inside (>= ENTRY_DEPTH_M past the
+    boundary). A rider waiting at a gate next to the wall is not an entry.
+  * A REFUSAL is a stop of >= 1 min at an access point, after which the rider gets in
+    somewhere else (or hands over somewhere else). It is evidence AGAINST that gate.
+  * Gate choice is Bayesian: entries + a small map prior (OSM gates a bit more likely)
+    -> probability that each gate is THE rider gate (Dirichlet). The hint is shown at
+    >= 90 % (about 3 agreeing trips), 'high' at >= 97 % with >= 8 trips.
+  * CLOSURE: >= 2 refusals at a gate and no successful entry there since -> the gate is
+    treated as closed immediately (the hint switches or disappears).
+  * Trips that contained a refusal are excluded from the 'usual handover time'.
 """
 from __future__ import annotations
 
@@ -42,8 +54,21 @@ NIGHT_MIN_TRIPS = 6
 CHANGE_WINDOW_DAYS = 14
 CHANGE_MIN_TRIPS = 5
 CHANGE_MIN_AGREE = 0.70
-CONF_HIGH = (40, 0.75)    # (trips, agreement)
+CONF_HIGH = (40, 0.75)    # (trips, agreement)  -- handover rule
 CONF_MED = (12, 0.60)
+ENTRY_DEPTH_M = 12.0      # an entry needs the rider to get this far inside the site (and beyond the fix's own accuracy)
+ENTRY_NEAR_M = 40.0       # the first fix >= EDGE_M inside within this distance of an entrance = that entrance
+REAPPROACH_M = 60.0       # two entry candidates this far apart ...
+REAPPROACH_MPS = 1.5      # ... reached faster than walking, mostly outside in between = went round to another gate
+REFUSAL_MIN_S = 60.0      # a stop this long at an access point ...
+REFUSAL_AP_M = 35.0       # ... within this distance of it ...
+REFUSAL_APART_M = 40.0    # ... that is this far from where the rider finally got in = refusal
+CLOSE_REFUSALS = 2        # refusals since the last successful entry -> gate treated as closed
+P_SHOW = 0.90             # probability needed to show a gate hint
+P_HIGH = 0.97
+PRIOR_OSM_GATE = 1.0      # Dirichlet prior: mapped gates are a little more likely rider gates
+PRIOR_OTHER = 0.5
+_RNG = np.random.default_rng(0)  # fixed: profiles are reproducible
 
 
 def _wmedian(v, w):
@@ -82,9 +107,14 @@ class TripEvidence:
     wait_at_hp_s: float | None      # final stop start -> delivered (lobby/gate)
     park_to_hp_s: float | None      # parking stop start -> final stop start
     pin_xy: tuple
+    refusals: tuple = ()            # ((x, y, ts), ...) stops at an access point before getting in elsewhere
+    entry_ts: float | None = None
+    tower_id: str | None = None     # block from the customer's address
+    door_xy: tuple | None = None    # where the handover happened for that block (lobby stop / last fix before indoors)
 
 
-def trip_evidence(world: World, site: Site, trip, g: pd.DataFrame, stops: pd.DataFrame, t_ref: float) -> TripEvidence:
+def trip_evidence(world: World, site: Site, trip, g: pd.DataFrame, stops: pd.DataFrame, t_ref: float,
+                  entry_model=None) -> TripEvidence:
     poly = site.poly
     deliv = trip.delivered_ts
     g = g[g.ts <= deliv + 5]
@@ -93,26 +123,65 @@ def trip_evidence(world: World, site: Site, trip, g: pd.DataFrame, stops: pd.Dat
     ys = np.asarray(ys)
     ts = g.ts.to_numpy()
     inside_raw = shapely.contains_xy(poly, xs, ys)
-    # 3-fix majority filter: removes single-fix in/out flips caused by GPS jitter at the boundary
-    inside = inside_raw.copy()
-    if len(inside_raw) >= 3:
-        inside[1:-1] = (inside_raw[:-2].astype(int) + inside_raw[1:-1] + inside_raw[2:]) >= 2
+    # depth of every fix inside the site (0 outside)
+    depth = np.where(inside_raw, shapely.distance(poly.exterior, shapely.points(xs, ys)), 0.0) if len(xs) else np.zeros(0)
     near = shapely.contains_xy(poly.buffer(30), xs, ys)
     boundary_ts = float(ts[np.argmax(near)]) if near.any() else None
 
     # --- gate evidence: FIRST SUSTAINED outside -> inside transition before delivered.
     # (Later flips are GPS jitter near the boundary, e.g. a lobby next to the wall.)
-    cross_xy, cross_kind = None, None
-    trans = np.where((~inside[:-1]) & (inside[1:]))[0]
-    for i in trans:
-        after = inside[i + 1:i + 1 + SUSTAIN_FIXES]  # fewer if the trace ends: still accepted
-        if after.all():
-            seg = LineString([(xs[i], ys[i]), (xs[i + 1], ys[i + 1])])
-            ip = seg.intersection(poly.exterior)
-            if not ip.is_empty:
-                p = ip if ip.geom_type == "Point" else min(ip.geoms, key=lambda q: q.distance(Point(xs[i], ys[i])))
-                cross_xy, cross_kind = (p.x, p.y), "crossing"
-                break
+    cross_xy, cross_kind, entry_ts = None, None, None
+    acc = g["accuracy_m"].fillna(5.0).to_numpy() if "accuracy_m" in g else np.full(len(xs), 5.0)
+    # ENTRY:
+    #  1. the trip must reach CLEARLY inside somewhere: a fix deeper than ENTRY_DEPTH_M and
+    #     than its own reported accuracy, supported by a neighbouring fix still inside
+    #     (a rider waiting at a gate, or driving along a wall that the OSM outline is drawn
+    #     over, never does);
+    #  2. the entrance is where the rider FIRST got >= EDGE_M inside within ENTRY_NEAR_M of an
+    #     access point, before that deep fix. A rider refused at a gate never gets inside
+    #     there; a rider who parks just inside and walks along the wall is still attributed
+    #     to the gate he came in through. Fixes can be 75 m apart (15 s pings), so we match
+    #     to entrances instead of intersecting straight lines with the wall.
+    deep = depth >= np.maximum(ENTRY_DEPTH_M, acc)
+    jj = None
+    for k in np.where(deep)[0]:
+        nb = depth[k + 1:k + 3]
+        if len(nb) == 0 or (nb >= EDGE_M).any():
+            jj = int(k)
+            break
+    if jj is not None and site.aps:
+        ap_xy = np.array([(a.x, a.y) for a in site.aps])
+        cand = None  # [first fix index, access point index, last fix index at that access point]
+        for k in range(0, jj + 1):
+            if depth[k] < EDGE_M:
+                continue
+            d = np.hypot(ap_xy[:, 0] - xs[k], ap_xy[:, 1] - ys[k])
+            a = int(d.argmin())
+            if d[a] > ENTRY_NEAR_M:
+                continue
+            if cand is None:
+                cand = [k, a, k]
+            elif a == cand[1]:
+                cand[2] = k
+            elif math.dist((site.aps[a].x, site.aps[a].y), (site.aps[cand[1]].x, site.aps[cand[1]].y)) >= REFUSAL_APART_M:
+                # Re-approach test: did the rider go ROUND to this other entrance (refused at the
+                # first; the 'inside' fixes there were GPS noise while waiting) or WALK inside past
+                # it? Going round: the two are >= REAPPROACH_M apart, covered faster than walking,
+                # with the fixes in between mostly outside / on the wall.
+                k0 = cand[2]
+                mid = list(range(k0 + 1, k))
+                dist_ = math.dist((xs[k0], ys[k0]), (xs[k], ys[k]))
+                dt = ts[k] - ts[k0]
+                shallow = (sum(depth[m] < EDGE_M for m in mid) / len(mid)) if mid else 0.0
+                if dist_ >= REAPPROACH_M and dt > 0 and dist_ / dt >= REAPPROACH_MPS and shallow >= 0.6:
+                    cand = [k, a, k]
+        if cand is not None:
+            k, a = cand[0], cand[1]
+            cross_xy, cross_kind, entry_ts = (site.aps[a].x, site.aps[a].y), "crossing", float(ts[k])
+        if cross_xy is None:  # got in away from every mapped entrance: an unmapped entrance
+            k = int(np.argmax(depth[:jj + 1] >= EDGE_M))
+            p = poly.exterior.interpolate(poly.exterior.project(Point(xs[k], ys[k])))
+            cross_xy, cross_kind, entry_ts = (p.x, p.y), "crossing", float(ts[k])
 
     # --- stops of this trip near the site
     st = stops[(stops.start_ts <= deliv + 5)]
@@ -127,9 +196,24 @@ def trip_evidence(world: World, site: Site, trip, g: pd.DataFrame, stops: pd.Dat
         p0 = st.iloc[0]
         park_xy, park_start = (p0.x, p0.y), p0.start_ts
         final_xy, final_start = (f.x, f.y), f.start_ts
-        if cross_xy is None and not poly.contains(Point(final_xy)) and poly.exterior.distance(Point(final_xy)) <= GATE_BOUNDARY_M:
-            p = poly.exterior.interpolate(poly.exterior.project(Point(final_xy)))
-            cross_xy, cross_kind = (p.x, p.y), "outside_stop"
+        fpt = Point(final_xy)
+        near_edge = poly.exterior.distance(fpt) <= GATE_BOUNDARY_M and (
+            not poly.contains(fpt) or poly.exterior.distance(fpt) < ENTRY_DEPTH_M)
+        if cross_xy is None and near_edge:
+            p = poly.exterior.interpolate(poly.exterior.project(fpt))
+            cross_xy, cross_kind, entry_ts = (p.x, p.y), "outside_stop", float(final_start)
+
+    # --- refusals: a long stop at an access point, then the rider got in / handed over elsewhere
+    refusals = []
+    if len(st) and cross_xy is not None and site.aps:
+        for r in st.itertuples():
+            if r.duration_s < REFUSAL_MIN_S or (entry_ts is not None and r.start_ts >= entry_ts):
+                continue
+            if r.start_ts == final_start and cross_kind == "outside_stop":
+                continue
+            ap_d = min(math.dist((r.x, r.y), (a.x, a.y)) for a in site.aps)
+            if ap_d <= REFUSAL_AP_M and math.dist((r.x, r.y), cross_xy) >= REFUSAL_APART_M:
+                refusals.append((float(r.x), float(r.y), float(r.start_ts)))
 
     # --- handover type
     last_fix = ts[-1] if len(ts) else None
@@ -146,13 +230,28 @@ def trip_evidence(world: World, site: Site, trip, g: pd.DataFrame, stops: pd.Dat
         elif inside_by >= -GATE_BOUNDARY_M:
             htype = "gate"
     wait = (deliv - final_start) if (htype in ("lobby", "gate") and final_start is not None) else None
+    door_xy = final_xy if htype == "lobby" else ((float(xs[-1]), float(ys[-1])) if htype == "doorstep" and len(xs) else None)
     p2h = (final_start - park_start) if (final_start is not None and park_start is not None) else None
     hour = pd.Timestamp(trip.assigned_ts, unit="s", tz="UTC").tz_convert(IST).hour
     age_days = (t_ref - trip.assigned_ts) / 86400
     pin_xy = world.proj.to_xy(trip.pin_lon, trip.pin_lat)
+    # Trip-level ML reading (pipeline/entry_model.py), when trained: replaces the hand-written
+    # entry / refusal rules, which it beats on held-out buildings (data/eval/entry_model.json).
+    if entry_model is not None and site.aps:
+        from .entry_model import trip_rows
+        rows = trip_rows(world, site, trip, g, stops)
+        ent, _, refused = entry_model.predict_trip(rows)
+        if ent is not None:
+            cross_xy, cross_kind = (ent.x, ent.y), "ml"
+        elif cross_kind != "outside_stop":
+            cross_xy, cross_kind = None, None
+        refusals = [(a.x, a.y, float(trip.assigned_ts)) for a in refused]
+    detour = bool(refusals)
     return TripEvidence(trip.trip_id, site.site_id, trip.assigned_ts, hour >= 23 or hour < 6,
                         0.5 ** (age_days / HALF_LIFE_DAYS), cross_xy, cross_kind, park_xy, final_xy, htype,
-                        (deliv - boundary_ts) if boundary_ts else None, wait, p2h, pin_xy)
+                        (deliv - boundary_ts) if (boundary_ts and not detour) else None,
+                        None if detour else wait, None if detour else p2h, pin_xy,
+                        tuple(refusals), entry_ts, getattr(trip, "tower_id", None), door_xy)
 
 
 def _confidence(n: int, agree: float) -> str:
@@ -163,52 +262,110 @@ def _confidence(n: int, agree: float) -> str:
     return "low"
 
 
+def _gate_confidence(n: int, prob: float) -> str:
+    if n >= 8 and prob >= P_HIGH:
+        return "high"
+    if n >= 3 and prob >= P_SHOW:
+        return "medium"
+    return "low"
+
+
 def _gate_vote(world: World, site: Site, ev: list[TripEvidence], use_recency: bool):
-    """Each trip's entry point votes for the nearest OSM access point (within
-    GATE_SNAP_M). Entries far from every mapped access point are clustered with
-    DBSCAN into 'learned' gates that OSM does not have. The winner is the gate
-    that collects the most (recency-weighted) votes from FAST trips (handover
-    time <= site median), as in PDF 3.1 'where fast trips cross the boundary'."""
+    """Bayesian gate choice (see module docstring).
+
+    Each trip's entry point is snapped to the nearest OSM access point (<= GATE_SNAP_M);
+    entries far from every mapped access point are DBSCAN-clustered into 'learned' gates
+    OSM does not have. Each gate's entries (recency-weighted; slow trips count half)
+    plus a small map prior give a Dirichlet; the probability that a gate is THE rider
+    gate is the share of Dirichlet samples where it has the largest share. Refusals
+    count against a gate; a gate with >= CLOSE_REFUSALS refusals since its last
+    successful entry is treated as closed and cannot win."""
     pts = [e for e in ev if e.cross_xy is not None]
-    if len(pts) < 2:
+    if not pts:
         return None
     X = np.array([e.cross_xy for e in pts])
     w = np.array([e.weight if use_recency else 1.0 for e in pts])
     ht = np.array([e.handover_s if e.handover_s is not None else np.nan for e in pts])
     med = np.nanmedian(ht) if np.isfinite(ht).any() else np.inf
-    fast = np.where(np.isfinite(ht), ht <= med, True)
-    keys = np.empty(len(pts), dtype=object)
+    slow = np.where(np.isfinite(ht), ht > 1.5 * med, False)
+    w_ent = w * np.where(slow, 0.5, 1.0)
     ap_xy = np.array([(a.x, a.y) for a in site.aps]) if site.aps else np.zeros((0, 2))
-    if len(ap_xy):
-        d = np.hypot(X[:, None, 0] - ap_xy[None, :, 0], X[:, None, 1] - ap_xy[None, :, 1])
-        j = d.argmin(1)
-        near = d[np.arange(len(pts)), j] <= GATE_SNAP_M
-        for i in np.where(near)[0]:
-            keys[i] = site.aps[j[i]].ap_id
-    else:
-        near = np.zeros(len(pts), bool)
-    far = np.where(~near)[0]
+
+    def snap(xy):
+        if not len(ap_xy):
+            return None
+        d = np.hypot(ap_xy[:, 0] - xy[0], ap_xy[:, 1] - xy[1])
+        j = int(d.argmin())
+        return site.aps[j].ap_id if d[j] <= GATE_SNAP_M else None
+
+    keys = np.array([snap(xy) for xy in X], dtype=object)
+    far = np.where(keys == None)[0]  # noqa: E711
     if len(far) >= 2:
         lab = DBSCAN(eps=GATE_EPS_M, min_samples=2).fit(X[far]).labels_
         for i, l in zip(far, lab):
             keys[i] = f"learned{l}" if l >= 0 else None
-    clusters = []
-    for k in {k for k in keys if k is not None}:
+
+    # refusals per access point (with time)
+    refused: dict[str, list[tuple[float, float]]] = {}
+    for e in ev:
+        for (rx, ry, rts) in e.refusals:
+            k = snap((rx, ry))
+            if k:
+                refused.setdefault(k, []).append((rts, e.weight if use_recency else 1.0))
+
+    gates = {}
+    for k in {k for k in keys if k is not None} | set(refused):
         m = keys == k
         ap = next((a for a in site.aps if a.ap_id == k), None)
-        cx, cy = (ap.x, ap.y) if ap else (np.average(X[m, 0], weights=w[m]), np.average(X[m, 1], weights=w[m]))
-        clusters.append(dict(
-            key=k, x=cx, y=cy, ap=ap, n=int(m.sum()),
-            score_fast=float(w[m & fast].sum()), score_all=float(w[m].sum()),
-            median_handover_s=float(np.nanmedian(ht[m])) if np.isfinite(ht[m]).any() else None))
-    if not clusters:
+        if m.any():
+            cx, cy = (ap.x, ap.y) if ap else (np.average(X[m, 0], weights=w[m]), np.average(X[m, 1], weights=w[m]))
+        else:
+            cx, cy = ap.x, ap.y
+        entry_ts = [pts[i].ts for i in np.where(m)[0]]
+        last_entry = max(entry_ts, default=-1.0)
+        refs = refused.get(k, [])
+        ref_since = [t for t, _ in refs if t > last_entry]
+        # refusal penalty: recency-weighted; refusals already followed by successful entries
+        # at that gate (the gate has opened again / was a one-off) count a quarter
+        penalty = sum(wt * (1.0 if t > last_entry else 0.25) for t, wt in refs)
+        gates[k] = dict(
+            key=k, x=cx, y=cy, ap=ap, n=int(m.sum()), entries=float(w_ent[m].sum()),
+            refusals=len(refs), refusals_since_entry=len(ref_since), penalty=penalty,
+            closed=len(ref_since) >= CLOSE_REFUSALS,
+            prior=PRIOR_OSM_GATE if (ap and ap.osm_gate) else PRIOR_OTHER,
+            median_handover_s=float(np.nanmedian(ht[m])) if m.any() and np.isfinite(ht[m]).any() else None)
+    if not gates:
         return None
-    cl = sorted(clusters, key=lambda c: (-c["score_fast"], -c["score_all"]))
-    total_fast = sum(c["score_fast"] for c in cl) or 1.0
+    # candidate set: every gate seen in the data plus the site's other mapped gates (as alternatives)
+    for a in site.aps:
+        if a.ap_id not in gates and a.osm_gate:
+            gates[a.ap_id] = dict(key=a.ap_id, x=a.x, y=a.y, ap=a, n=0, entries=0.0, refusals=0, penalty=0.0,
+                                  refusals_since_entry=0, closed=False, prior=PRIOR_OTHER, median_handover_s=None)
+    cl = list(gates.values())
+    alpha = np.array([c["prior"] + c["entries"] for c in cl])
+    # each refusal moves belief away from that gate (as if one entry went elsewhere)
+    alpha = np.maximum(0.05, alpha - np.array([0.5 * c["penalty"] for c in cl]))
+    open_ = np.array([not c["closed"] for c in cl])
+    samples = _RNG.dirichlet(alpha, 4000)
+    samples[:, ~open_] = -1.0
+    win_idx = samples.argmax(1)
+    probs = np.bincount(win_idx, minlength=len(cl)) / len(samples)
+    if not open_.any():
+        probs[:] = 0.0
+    for c, pr in zip(cl, probs):
+        c["prob"] = float(pr)
+    cl.sort(key=lambda c: (-c["prob"], -c["entries"]))
     win = cl[0]
-    others_ht = [c["median_handover_s"] for c in cl[1:] if c["median_handover_s"] is not None and c["n"] >= 2]
-    faster = (not others_ht) or (win["median_handover_s"] is not None and win["median_handover_s"] <= min(others_ht))
-    return dict(win=win, agreement=win["score_fast"] / total_fast, n=len(pts), faster=bool(faster), clusters=cl)
+    n_ent = int(sum(c["n"] for c in cl))
+    total = sum(c["entries"] for c in cl) or 1.0
+    # 'is the recommended gate actually faster?': only alternatives that a real share of
+    # riders use (>= 3 trips and >= 20 % of entries) and that are clearly faster (> 10 %) count
+    others_ht = [c["median_handover_s"] for c in cl[1:] if c["median_handover_s"] is not None
+                 and c["n"] >= 3 and c["entries"] >= 0.2 * total and not c["closed"]]
+    faster = (not others_ht or win["median_handover_s"] is None
+              or win["median_handover_s"] <= 1.1 * min(others_ht))
+    return dict(win=win, agreement=win["entries"] / total, n=n_ent, faster=bool(faster), clusters=cl,
+                prob=win["prob"], any_open=bool(open_.any()))
 
 
 def build_site_profile(world: World, site: Site, ev: list[TripEvidence], use_recency: bool = True) -> dict:
@@ -224,16 +381,23 @@ def build_site_profile(world: World, site: Site, ev: list[TripEvidence], use_rec
         win = v["win"]
         lat, lon = world.ll(win["x"], win["y"])
         ap = win["ap"]
+
+        def gdesc(c):
+            la, lo = world.ll(c["x"], c["y"])
+            return dict(ap_id=c["ap"].ap_id if c["ap"] else None, key=c["key"], lat=round(la, 6), lon=round(lo, 6),
+                        trips=c["n"], refusals=c["refusals"], closed=c["closed"], probability=round(c["prob"], 3),
+                        osm_gate=bool(c["ap"] and c["ap"].osm_gate), median_handover_s=c["median_handover_s"])
+        conf = _gate_confidence(win["n"], v["prob"]) if (v["any_open"] and win["n"] > 0) else "low"
         return dict(
             ap_id=ap.ap_id if ap else None, lat=round(lat, 6), lon=round(lon, 6),
             osm_gate=bool(ap and ap.osm_gate), gate_osm_id=ap.gate_osm_id if ap else None,
             gate_name=(ap.gate_name if ap and ap.gate_name else None),
-            in_osm=bool(ap and ap.osm_gate), trips=v["n"], agreement=round(v["agreement"], 3),
-            faster_than_alternatives=v["faster"], confidence=_confidence(v["n"], v["agreement"]),
+            in_osm=bool(ap and ap.osm_gate), trips=win["n"], agreement=round(v["agreement"], 3),
+            probability=round(v["prob"], 3), faster_than_alternatives=v["faster"], confidence=conf,
             median_handover_s=win["median_handover_s"],
-            alternatives=[dict(ap_id=c["ap"].ap_id if c["ap"] else None, trips=c["n"],
-                               lat=round(world.ll(c["x"], c["y"])[0], 6), lon=round(world.ll(c["x"], c["y"])[1], 6),
-                               median_handover_s=c["median_handover_s"]) for c in v["clusters"][1:4]],
+            alternatives=[gdesc(c) for c in v["clusters"][1:4]],
+            gates=[gdesc(c) for c in v["clusters"]],
+            closed_gates=[gdesc(c) for c in v["clusters"] if c["closed"]],
         )
 
     day_ev = [e for e in ev if not e.night]
@@ -246,8 +410,8 @@ def build_site_profile(world: World, site: Site, ev: list[TripEvidence], use_rec
         t_last = max(e.ts for e in day_ev)
         recent = [e for e in day_ev if e.ts >= t_last - CHANGE_WINDOW_DAYS * 86400]
         rv = _gate_vote(world, site, recent, use_recency=False) if len(recent) >= CHANGE_MIN_TRIPS else None
-        if (rv and rv["n"] >= CHANGE_MIN_TRIPS and rv["agreement"] >= CHANGE_MIN_AGREE
-                and rv["win"]["key"] != (prof["gate_day"]["ap_id"] or "")):
+        if (rv and rv["n"] >= CHANGE_MIN_TRIPS and rv["prob"] >= P_SHOW and rv["agreement"] >= CHANGE_MIN_AGREE
+                and rv["win"]["key"] != (prof["gate_day"]["ap_id"] or prof["gate_day"].get("key", ""))):
             g = gate_block(recent)
             if g:
                 g["confidence"] = "medium" if g["confidence"] == "low" else g["confidence"]
@@ -256,7 +420,8 @@ def build_site_profile(world: World, site: Site, ev: list[TripEvidence], use_rec
     prof["gate_night"] = None
     if len(night_ev) >= NIGHT_MIN_TRIPS:
         gn = gate_block(night_ev)
-        if gn and prof["gate_day"] and gn["ap_id"] != prof["gate_day"]["ap_id"] and gn["agreement"] >= CONF_MED[1]:
+        if (gn and prof["gate_day"] and gn["ap_id"] != prof["gate_day"]["ap_id"]
+                and gn["confidence"] in ("high", "medium")):
             prof["gate_night"] = gn
 
     # parking point
@@ -291,8 +456,11 @@ def build_site_profile(world: World, site: Site, ev: list[TripEvidence], use_rec
             votes[t] = votes.get(t, 0) + wt
         t_best = max(votes, key=votes.get)
         agree = votes[t_best] / tot
-        prof["handover"] = dict(type=t_best, agreement=round(agree, 3), trips=len(typed),
-                                confidence=_confidence(len(typed), agree),
+        kinds = ["gate", "lobby", "doorstep"]
+        a = np.array([1.0 + votes.get(k, 0.0) for k in kinds])
+        p_best = float((_RNG.dirichlet(a, 4000).argmax(1) == kinds.index(t_best)).mean())
+        prof["handover"] = dict(type=t_best, agreement=round(agree, 3), trips=len(typed), probability=round(p_best, 3),
+                                confidence=_gate_confidence(len(typed), p_best),
                                 votes={k: round(v / tot, 3) for k, v in votes.items()})
 
     # timing
@@ -310,6 +478,20 @@ def build_site_profile(world: World, site: Site, ev: list[TripEvidence], use_rec
     # Once the sync is live, the backend refines it from 'Coming' tap -> delivered.
     prof["come_down_lead_s"] = round(_wmedian(*zip(*wa)), 1) if len(wa) >= 5 else None
     prof["park_to_handover_point_s"] = round(_wmedian(*zip(*p2)), 1) if len(p2) >= 5 else None
+
+    # learned block doors: where riders actually handed over for each block (from the address)
+    doors: dict[str, list] = {}
+    for e in ev:
+        if e.tower_id and e.door_xy is not None:
+            doors.setdefault(e.tower_id, []).append(e.door_xy)
+    prof["blocks"] = {}
+    for tid, pts in doors.items():
+        if len(pts) >= 2:
+            arr = np.array(pts)
+            mx, my = float(np.median(arr[:, 0])), float(np.median(arr[:, 1]))
+            la, lo = world.ll(mx, my)
+            spread = float(np.median(np.hypot(arr[:, 0] - mx, arr[:, 1] - my)))
+            prof["blocks"][tid] = dict(lat=round(la, 6), lon=round(lo, 6), trips=len(pts), spread_m=round(spread, 1))
 
     # tower floors from OSM (cold-start prior and per-tower adjustment)
     lv = [t.levels for t in site.towers if t.levels]
@@ -330,7 +512,12 @@ def build_site_profile(world: World, site: Site, ev: list[TripEvidence], use_rec
 
 
 def build_profiles(world: World, trips: pd.DataFrame, pings: pd.DataFrame, use_recency: bool = True,
-                   t_ref: float | None = None, return_evidence: bool = False):
+                   t_ref: float | None = None, return_evidence: bool = False, entry_model="auto"):
+    """entry_model: 'auto' = use the trained trip-level model if data/models/entry_model.joblib
+    exists, else the hand-written rules; None = rules only; or a model object."""
+    if entry_model == "auto":
+        from .entry_model import load_model
+        entry_model = load_model()
     trips = trips[[c for c in trips.columns if not c.startswith("truth_")]]
     t_ref = t_ref or float(trips.delivered_ts.max()) + 3600
     clean = clean_pings(pings[pings.trip_id.isin(trips.trip_id)])
@@ -345,7 +532,7 @@ def build_profiles(world: World, trips: pd.DataFrame, pings: pd.DataFrame, use_r
         if site is None or g is None or len(g) < 3:
             continue
         evidence.setdefault(tr.site_id, []).append(
-            trip_evidence(world, site, tr, g, stops_by.get(tr.trip_id, empty_stops), t_ref))
+            trip_evidence(world, site, tr, g, stops_by.get(tr.trip_id, empty_stops), t_ref, entry_model))
     profiles = {sid: build_site_profile(world, world.sites[sid], ev, use_recency) for sid, ev in evidence.items()}
     if return_evidence:
         return profiles, evidence

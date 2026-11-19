@@ -29,7 +29,7 @@ from datetime import datetime, timedelta, timezone
 import networkx as nx
 import numpy as np
 import pandas as pd
-from shapely.geometry import Point
+from shapely.geometry import LineString, Point
 
 from .config import EVAL_DIR, OSM_DIR, SIM, SIM_DIR, SimAssumptions, load_study
 from .sitemodel import Site, World
@@ -101,16 +101,42 @@ class Simulator:
             for n in comp:
                 self.comp[n] = ci
         self._sub_cache: dict = {}
+        self._outside_cache: dict = {}
 
     # ------------------------------------------------------------------ truth
+    def outside_graph(self, site: Site):
+        """Drive network without the site's interior (riders reach and switch gates from outside)."""
+        if site.site_id not in self._outside_cache:
+            # drop every road SEGMENT that touches the site's interior (a node filter alone
+            # lets segments cut across concave corners of the wall)
+            inner = site.poly.buffer(-3)
+            minx, miny, maxx, maxy = site.poly.buffer(10).bounds
+            keep = []
+            for u, v, k in self.w.drive.edges(keys=True):
+                (x1, y1), (x2, y2) = self.w.node_xy(u), self.w.node_xy(v)
+                if max(x1, x2) < minx or min(x1, x2) > maxx or max(y1, y2) < miny or min(y1, y2) > maxy:
+                    keep.append((u, v, k))
+                    continue
+                if not inner.intersects(LineString([(x1, y1), (x2, y2)])):
+                    keep.append((u, v, k))
+            G = self.w.drive.edge_subgraph(keep)
+            comp = {}
+            for ci, cc in enumerate(nx.connected_components(G)):
+                for n in cc:
+                    comp[n] = ci
+            self._outside_cache[site.site_id] = (G, comp)
+        return self._outside_cache[site.site_id]
+
     def candidates(self, site: Site):
-        """Drivable access points in the drive component holding most of the site's gates."""
-        c = [a for a in site.aps if a.drivable and a.out_node in self.drive_nodes]
+        """Drivable access points that can all be reached from each other WITHOUT driving
+        through the site (the outside road component holding most of the site's gates)."""
+        G, comp = self.outside_graph(site)
+        c = [a for a in site.aps if a.drivable and a.out_node in comp]
         if not c:
             return []
         from collections import Counter
-        best = Counter(self.comp[a.out_node] for a in c).most_common(1)[0][0]
-        return [a for a in c if self.comp[a.out_node] == best]
+        best = Counter(comp[a.out_node] for a in c).most_common(1)[0][0]
+        return [a for a in c if comp[a.out_node] == best]
 
     def eligible(self, site: Site) -> bool:
         return bool(self.candidates(site))
@@ -225,7 +251,10 @@ class Simulator:
         hw = np.array(list(sim.hour_weights.values()), dtype=float)
         hw /= hw.sum()
         cand = self.candidates(site)
-        dij = {a.ap_id: nx.single_source_dijkstra(self.w.drive, a.out_node, cutoff=sim.approach_radius_m * 1.6,
+        # Riders reach a gate (and reroute between gates) on roads OUTSIDE the site: a rider
+        # refused at one gate cannot cut through the society's internal roads.
+        outside, _ = self.outside_graph(site)
+        dij = {a.ap_id: nx.single_source_dijkstra(outside, a.out_node, cutoff=sim.approach_radius_m * 1.6,
                                                   weight="length") for a in cand}
         dist0 = dij[truth["day_gate"]][0]
         b30 = site.poly.buffer(30)
@@ -234,7 +263,7 @@ class Simulator:
                   and not b30.contains(Point(self.w.node_xy(n)))]
         if not starts:
             starts = [n for n, d in dist0.items() if d >= 0.3 * sim.approach_radius_m] or list(dist0)
-        pre = dict(cand=cand, dij=dij, starts=starts)
+        pre = dict(cand=cand, dij=dij, starts=starts, outside=outside)
         lo, hi = sim.orders_per_site_range
         n = orders_override or int(np.clip(rng.pareto(1.2) * lo + lo, lo, hi))
         orders = sorted((int(rng.integers(0, sim.days)), int(rng.choice(hours, p=hw)), float(rng.uniform(0, 60)))
@@ -292,6 +321,9 @@ class Simulator:
                     best, bd = a.ap_id, tot
             chosen = best or true_ap_id
             chooser = "navigation"
+        if truth.get("force_choice"):
+            # scenario hook (learning-stages demo): this rider heads for a given gate
+            chosen, chooser = truth["force_choice"], "forced"
         speed_factor = float(rng.uniform(0.75, 1.25))
         v_road = sim.rider_speed_kmh_road / 3.6 * speed_factor
         v_in = sim.rider_speed_kmh_inside / 3.6 * speed_factor
@@ -303,7 +335,7 @@ class Simulator:
             dist, paths = pre["dij"][ap_id]
             p = paths.get(from_node)
             if p is None:
-                p = nx.shortest_path(self.w.drive, from_node, self._ap(site, ap_id).out_node, weight="length")
+                p = nx.shortest_path(pre["outside"], from_node, self._ap(site, ap_id).out_node, weight="length")
             else:
                 p = list(reversed(p))
             tl.follow(self.w.path_xy(p), v_road, "drive")
@@ -329,7 +361,7 @@ class Simulator:
             else:
                 # reroute along roads to the correct gate
                 try:
-                    p = nx.shortest_path(self.w.drive, a.out_node, true_ap.out_node, weight="length")
+                    p = nx.shortest_path(pre["outside"], a.out_node, true_ap.out_node, weight="length")
                     tl.follow(self.w.path_xy(p), v_road, "drive")
                 except nx.NetworkXNoPath:
                     tl.move_to(*self.w.node_xy(true_ap.out_node), v_road, "drive")

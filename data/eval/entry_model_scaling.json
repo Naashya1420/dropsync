@@ -1,0 +1,78 @@
+{
+  "held_out_buildings": 24,
+  "results": [
+    {
+      "setups": 6,
+      "trips": 10320,
+      "normal": {
+        "entry": 0.8854,
+        "refusal_recall": 0.8966,
+        "refusal_precision": 0.4815
+      },
+      "closures + new riders": {
+        "entry": 0.8542,
+        "refusal_recall": 0.8212,
+        "refusal_precision": 0.7867
+      },
+      "2x GPS noise": {
+        "entry": 0.7969,
+        "refusal_recall": 0.7434,
+        "refusal_precision": 0.6348
+      },
+      "sparse pings (30 s)": {
+        "entry": 0.8229,
+        "refusal_recall": 0.7698,
+        "refusal_precision": 0.5515
+      }
+    },
+    {
+      "setups": 12,
+      "trips": 20640,
+      "normal": {
+        "entry": 0.8698,
+        "refusal_recall": 0.8621,
+        "refusal_precision": 0.4839
+      },
+      "closures + new riders": {
+        "entry": 0.849,
+        "refusal_recall": 0.865,
+        "refusal_precision": 0.7695
+      },
+      "2x GPS noise": {
+        "entry": 0.8156,
+        "refusal_recall": 0.7763,
+        "refusal_precision": 0.6629
+      },
+      "sparse pings (30 s)": {
+        "entry": 0.8073,
+        "refusal_recall": 0.7698,
+        "refusal_precision": 0.5431
+      }
+    },
+    {
+      "setups": 18,
+      "trips": 30960,
+      "normal": {
+        "entry": 0.8635,
+        "refusal_recall": 0.8621,
+        "refusal_precision": 0.4934
+      },
+      "closures + new riders": {
+        "entry": 0.8396,
+        "refusal_recall": 0.8577,
+        "refusal_precision": 0.7756
+      },
+      "2x GPS noise": {
+        "entry": 0.8146,
+        "refusal_recall": 0.7566,
+        "refusal_precision": 0.6461
+      },
+      "sparse pings (30 s)": {
+        "entry": 0.8208,
+        "refusal_recall": 0.741,
+        "refusal_precision": 0.5538
+      }
+    }
+  ],
+  "seconds": 603
+}

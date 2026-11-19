@@ -179,7 +179,7 @@ export default function RiderApp() {
         </label>
         <label>{t.tower}
           <select value={towerId} onChange={(e) => setTowerId(e.target.value)}>
-            {detail?.site.towers.map((tw, i) => <option key={tw.tower_id} value={tw.tower_id}>{t.tower} {i + 1}{tw.levels ? ` · ${t.floors(tw.levels)}` : ''}</option>)}
+            {detail?.site.towers.map((tw, i) => <option key={tw.tower_id} value={tw.tower_id}>{tw.name || `${t.tower} ${i + 1}`}{tw.levels ? ` · ${t.floors(tw.levels)}` : ''}</option>)}
           </select>
         </label>
         <label>{t.speed}
@@ -220,7 +220,7 @@ export default function RiderApp() {
           {detail && detail.site.site_id === siteId && (
             <div className="znext">
               <span>{t.nextDrop}:</span>
-              <b>{detail.site.name}{detail.site.towers.length > 1 ? ` · ${t.tower} ${Math.max(1, detail.site.towers.findIndex((x) => x.tower_id === towerId) + 1)}` : ''}</b>
+              <b>{detail.site.name}{detail.site.towers.length > 1 ? ` · ${detail.site.towers.find((x) => x.tower_id === towerId)?.name || `${t.tower} ${Math.max(1, detail.site.towers.findIndex((x) => x.tower_id === towerId) + 1)}`}` : ''}</b>
             </div>
           )}
 

@@ -12,6 +12,73 @@ Read sections 1–3 first; the rest is reference.
 
 ---
 
+## 0. Latest changes (20 Nov) — read this first
+
+**1. How DropSync learns a building (v2)** — `pipeline/profile_builder.py`
+- Two layers:
+  - **(a)** each delivery is *read* (which gate the rider got in through, where he was turned away);
+  - **(b)** a building's gate is decided by **Bayesian counting**:
+    - per gate: map prior (OSM gate 1.0 / other entrance 0.5) + entries (recency-weighted, slow trips ×0.5) − 0.5 × refusals;
+    - probability that each gate is THE rider gate = share of 4,000 Dirichlet samples in which it wins;
+    - hint shown at ≥ 90 % with ≥ 3 entries, "high" at ≥ 97 % with ≥ 8;
+    - ≥ 2 refusals at a gate and nobody got in since → gate treated as closed.
+- Trips with a refusal are excluded from "usual handover time".
+- Measured (`/lab`, buildings unseen by the model):
+  - hint appears after 3–10 deliveries (was 15);
+  - a closed gate stops being recommended within 3–5 deliveries (was 30).
+
+**2. Trip-reading ML model (the augmentation idea)** — `pipeline/entry_model.py`, `data/models/entry_model.joblib`
+- **Model:** 2 gradient-boosted tree classifiers (scikit-learn HistGradientBoosting): "got in through this gate?" and "turned away at this gate?". About 20 features per (trip, gate).
+- **Data:** 10,320 simulated trips at 43 real buildings (30,000 rows), 6 randomised setups:
+  - GPS noise 0.7–2× measured,
+  - pings 5–30 s,
+  - 30–70 % new riders,
+  - 0–60 % wrong-gate riders let in,
+  - gate changes.
+- **Test:** 24 held-out buildings.
+
+  | Condition | Rules | **ML** |
+  |---|---|---|
+  | Normal | 76 % | **89 %** |
+  | Closures | 69 % | **85 %** |
+  | 2× noise | 66 % | **80 %** |
+  | 30 s pings | 54 % | **82 %** |
+
+  Refusals caught: 60 % → 90 %. (`data/eval/entry_model.json`)
+- **Scaling test:** 10k → 21k → 31k simulated trips gives no gain (88.5 → 87.0 → 86.4 %). More simulation doesn't help; real labelled trips are needed. (`pipeline/entry_model_scaling.py`, `data/eval/entry_model_scaling.json`)
+- Retrain: `python -m pipeline.entry_model train` (~2.5 min).
+- Profiles use the model automatically if the file exists; otherwise the hand-written rules.
+
+**3. Simulator fix:** riders reach and switch gates only on roads OUTSIDE the society. 312 of 530 reroutes used to cut through the society's interior, which polluted the gate readings.
+
+**4. Blocks inside a society**
+- **Names:** real block names from OSM (`data/osm/city/building_labels.json`); 163 named blocks, e.g. Sterling Shalom A–F Block, Republic of Whitefield Towers E–J.
+- **Walking route:** gate → block door on mapped internal paths (961 blocks; "approx" when paths aren't mapped).
+- **Learned door:** where past riders handed over for that block (129 societies).
+- **In the rider app:** a "Your block" row and a dotted blue route on the map.
+- **Demo:** avatar → Sterling Shalom → C-Block.
+
+**5. "How it learns" page `/lab`** (data: `python -m pipeline.lab` → `data/out/lab.json`)
+- 3 held-out buildings × 4 scenarios: first visits, gate closes, 11th rider ignores hint (turned away / B also works).
+- Slider over 0..N deliveries.
+- Shows what the next rider sees, every gate's probability, the latest rider's track and a plain-language "why".
+
+**6. Re-evaluation (days 1–60 learn, 61–90 test)**
+- Overall: gate hint right 96 % when shown (shown at 99 % of buildings, was 72 %); multi-gate buildings 91 %; night gate 75 % where enough night data.
+- **Buildings the model never saw: 83 % / hint 82 % — quote these.**
+- The robustness stage of `pipeline.evaluate` timed out, so `data/eval/metrics.json` (dashboard) still has the older numbers. Re-run with a longer timeout.
+
+**7. Known problems still open** (full list in chat history; top 5):
+- #8 best gate depends on the block;
+- #21/#22 customer can't come down / night safety;
+- #25 order cancelled or reassigned after the nudge;
+- #4 a closed gate that reopens is never re-learned;
+- #33 everything learned from simulation → needs the campus trial.
+
+**8. LaDe decision:** not used. It has courier GPS but no gates or buildings (no labels for our task), and Eternal asked for India-only data. At most it could inform simulator realism, offline, with mentor approval.
+
+---
+
 ## 1. Where things stand
 
 **The build is complete. The only remaining work is the campus field trial, which needs people on site.**

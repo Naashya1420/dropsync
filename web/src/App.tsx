@@ -1,5 +1,6 @@
 import { NavLink, Route, Routes } from 'react-router-dom'
 import Demo from './pages/Demo'
+import Lab from './pages/Lab'
 import Ops from './pages/Ops'
 import Trial from './pages/Trial'
 import RiderApp from './rider/RiderApp'
@@ -14,6 +15,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         <nav className="nav">
           <NavLink to="/stage">Rider app</NavLink>
           <NavLink to="/" end>Live demo</NavLink>
+          <NavLink to="/lab">How it learns</NavLink>
           <NavLink to="/ops">Ops dashboard</NavLink>
           <NavLink to="/trial">Field trial</NavLink>
         </nav>
@@ -32,6 +34,7 @@ export default function App() {
       <Route path="/track" element={<Track />} />
       <Route path="/stage" element={<Stage />} />
       <Route path="/" element={<Shell><Demo /></Shell>} />
+      <Route path="/lab" element={<Shell><Lab /></Shell>} />
       <Route path="/ops" element={<Shell><Ops /></Shell>} />
       <Route path="/trial" element={<Shell><Trial /></Shell>} />
     </Routes>

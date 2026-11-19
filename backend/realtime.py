@@ -152,6 +152,8 @@ class Order:
     calls: int = 0
     helped: bool | None = None
     delivered_wall: float | None = None   # wall-clock time of delivery (for stale-order checks)
+    inside_route: list = field(default_factory=list)   # walking route gate -> block door (inside the society)
+    block: dict | None = None
 
 
 def _gate_for(profile, site, hour):
@@ -177,6 +179,28 @@ def lead_time(profile: dict, tower: dict) -> tuple[float | None, str]:
         return max(30.0, base + adj), (f"building median {base:.0f}s, tower has {lv:.0f} floors vs "
                                        f"site median {med:.0f} ({adj:+.0f}s)")
     return base, f"building median {base:.0f}s (learned from {profile['trips']} trips)"
+
+
+def _along_walk(o, f: float):
+    """Position after fraction f of the walk from the parking spot to the handover point,
+    following the society's internal route when one exists (not a straight line)."""
+    pts = [o.parking]
+    if o.inside_route:
+        # join the route at its point nearest the parking spot
+        j = min(range(len(o.inside_route)), key=lambda i: hav(o.inside_route[i], o.parking))
+        pts += o.inside_route[j:]
+    else:
+        pts.append(o.handover_point)
+    seg = [hav(pts[i], pts[i + 1]) for i in range(len(pts) - 1)]
+    total = sum(seg) or 1.0
+    d = f * total
+    for i, L in enumerate(seg):
+        if d <= L or i == len(seg) - 1:
+            r = 0 if L == 0 else min(1.0, d / L)
+            a, b = pts[i], pts[i + 1]
+            return (a[0] + r * (b[0] - a[0]), a[1] + r * (b[1] - a[1]))
+        d -= L
+    return pts[-1]
 
 
 class Hub:
@@ -211,10 +235,21 @@ class Hub:
             parking = (prof["parking"]["lat"], prof["parking"]["lon"])
         else:
             parking = (g["lat"], g["lon"])
+        # Block (from the customer's address): name from OSM, door learned from past
+        # deliveries to that block (else the OSM entrance), walking route inside the society.
+        door = ((prof or {}).get("blocks") or {}).get(tower.get("tower_id") or "")
+        block_door = (door["lat"], door["lon"]) if door else tuple(tower.get("entrance") or (tower["lat"], tower["lon"]))
+        route = (tower.get("routes") or {}).get(g.get("ap_id") or "")
         if htype == "gate":
             hp = (g["lat"], g["lon"])
+            inside = []
         else:
-            hp = tuple(tower.get("entrance") or (tower["lat"], tower["lon"]))
+            hp = block_door
+            inside = [tuple(p) for p in (route or {}).get("path", [])] + [hp]
+        block = dict(name=tower.get("name"), levels=tower.get("levels"),
+                     walk_m=(route or {}).get("m"), mapped=bool((route or {}).get("mapped")),
+                     door_learned=bool(door), door_trips=(door or {}).get("trips", 0),
+                     index=next((i for i, t in enumerate(towers) if t["tower_id"] == tower["tower_id"]), 0) + 1)
         lead, why = lead_time(prof, tower)
         # Demo: start far enough away that the nudge fires mid-route (as in production for
         # most orders); if the lead time exceeds the whole trip, it would fire on assignment.
@@ -249,7 +284,8 @@ class Hub:
                   new_partner=new_partner, speedup=speedup, route=route, gate=g, parking=parking,
                   handover_point=hp, handover_type=htype, lead_s=lead, lead_explain=why,
                   sync_enabled=sync_enabled and bool(prof and prof.get("show_sync")),
-                  cust_descent_s=cust_descent, manual=manual, pickup=pickup, route_pickup=route_pickup)
+                  cust_descent_s=cust_descent, manual=manual, pickup=pickup, route_pickup=route_pickup,
+                  inside_route=inside, block=block)
         o.rider = route_pickup[0] if route_pickup else route[0]
         self.orders[o.order_id] = o
         self.latest = o.order_id
@@ -303,6 +339,7 @@ class Hub:
             arrived_at=o.arrived_at, called_at=o.called_at, calls=o.calls, helped=o.helped,
             drop_distance_m=round(self._route_len(o.route)),
             delivered_ago_s=None if o.delivered_wall is None else round(time.time() - o.delivered_wall),
+            inside_route=o.inside_route, block=o.block,
         )
 
     async def broadcast(self, o: Order):
@@ -391,7 +428,7 @@ class Hub:
         seg_len = [hav(route[i], route[i + 1]) for i in range(len(route) - 1)]
         total = sum(seg_len)
         post_hp = ((o.profile or {}).get("park_to_handover_point_s") or
-                   hav(o.parking, o.handover_point) / WALK_MPS)
+                   ((o.block or {}).get("walk_m") or hav(o.parking, o.handover_point)) / WALK_MPS)
         drive_v = NOMINAL_SPEED_MPS * 0.95  # the replayed rider is a little slower than nominal
         dist = 0.0
         phase_t = 0.0
@@ -451,8 +488,7 @@ class Hub:
             elif o.phase == "walk":
                 phase_t += dt
                 f = min(1.0, phase_t / max(post_hp, 1))
-                o.rider = (o.parking[0] + f * (o.handover_point[0] - o.parking[0]),
-                           o.parking[1] + f * (o.handover_point[1] - o.parking[1]))
+                o.rider = _along_walk(o, f)
                 o.eta_s = max(0.0, post_hp - phase_t)
                 if f >= 1.0:
                     o.phase = "at_handover" if o.handover_type != "doorstep" else "indoors"

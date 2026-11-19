@@ -43,7 +43,7 @@ export interface Tower {
   lon: number
   levels: number | null
   entrance: LatLon
-  name?: string
+  name?: string | null
 }
 
 export interface AccessPoint {
@@ -121,6 +121,8 @@ export interface OrderSnap {
   helped: boolean | null
   drop_distance_m: number
   delivered_ago_s: number | null
+  inside_route: LatLon[]
+  block: { name: string | null; levels: number | null; walk_m: number | null; mapped: boolean; door_learned: boolean; door_trips: number; index: number } | null
 }
 
 export interface Checkout {

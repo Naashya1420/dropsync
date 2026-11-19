@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir -r requirements-deploy.txt
 COPY backend/ backend/
 COPY pipeline/__init__.py pipeline/config.py pipeline/
 COPY data/study_area.json data/
-COPY data/out/meta.json data/out/profiles.json data/out/sites.json data/out/
+COPY data/out/meta.json data/out/profiles.json data/out/sites.json data/out/lab.json data/out/
 COPY data/eval/ data/eval/
 COPY data/osm/city/graph.graphml data/osm/city/restaurants.json data/osm/city/meta.json data/osm/city/
 COPY --from=web /web/dist web/dist

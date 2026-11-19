@@ -329,6 +329,19 @@ def main(fast: bool = False):
     print(f"[eval] train {len(train)} trips, test {len(test)} trips")
     profiles, evidence = build_profiles(world, train, pings, t_ref=t_ref, return_evidence=True)
     acc, acc_df = profile_accuracy(world, profiles, truths, train, TRAIN_DAYS)
+    # honesty check: the trip-level model was trained on simulated trips of some buildings;
+    # report the profile accuracy separately for buildings it never saw.
+    try:
+        from .entry_model import _split_sites, load_model
+        if load_model() is not None:
+            _, held = _split_sites(world, Simulator(world, SIM, noise))
+            h = acc_df[acc_df.site_id.isin(set(held))]
+            acc["held_out_buildings"] = dict(
+                sites=int(len(h)), gate_accuracy_multi_gate=_acc(h[h.n_gates >= 2].gate_ok),
+                gate_hint_precision=_acc(h[h.gate_shown].gate_ok), gate_hint_coverage=round(float(h.gate_shown.mean()), 4),
+                handover_type_accuracy=_acc(h.type_ok))
+    except Exception as ex:  # never block the evaluation on this extra
+        acc["held_out_buildings"] = dict(error=repr(ex))
     print("[eval] accuracy", json.dumps({k: v for k, v in acc.items() if k != "type_confusion"}))
     ab, ab_df = ab_sync(test, profiles, truths)
     # 'After feedback' variant: once the sync is live, the time from the 'Coming' tap to the
