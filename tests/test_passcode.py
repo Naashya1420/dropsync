@@ -19,6 +19,11 @@ assert ok.status_code == 303 and ok.headers["location"] == "/rider"
 assert c.get("/api/sites").status_code == 200                   # cookie set -> allowed
 evil = TestClient(app).post("/login", data={"code": "eternal123", "next": "//evil.example"}, follow_redirects=False)
 assert evil.headers["location"] == "/"                          # no open redirect
+# Add to Home Screen must work from the passcode screen too: tags present, manifest + icon open
+g = TestClient(app).get("/rider")
+assert 'href="/rider.webmanifest"' in g.text and 'apple-mobile-web-app-capable' in g.text
+assert TestClient(app).get("/rider.webmanifest").status_code == 200
+assert TestClient(app).get("/icons/rider-180.png").status_code == 200
 print("passcode ok")
 '''
 

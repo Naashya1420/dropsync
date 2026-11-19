@@ -107,6 +107,11 @@ blocked doing this automatically on the college Wi-Fi; it's a deliberate choice 
 - The free tier sleeps after 15 min idle: open the link about 1 min before the demo to wake it.
 - On phones: rider phone → `https://<your-app>.onrender.com/rider`, customer phone → `/track`
   (or one phone with two tabs). Laptop: `/stage`. Use "Add to Home screen" for a full-screen app feel.
+- **Home-screen app (full screen, not inside Safari/Chrome):** each page is an installable web app
+  (`/rider` → "DropSync Rider", red icon; `/track` → "DropSync Customer", dark icon; `/stage` → "DropSync").
+  iPhone: open the page in **Safari** → Share → **Add to Home Screen**. If an icon was added before this
+  change, **delete it and add it again** (iOS keeps the old bookmark). Home-screen apps have their own
+  login storage, so the passcode is asked once more inside the app. Android/Chrome: menu → Add to Home screen / Install app.
 - Data written online (field-trial uploads, live logs) is temporary on the free tier (lost on restart).
 - Verified before deploying: the exact files the Dockerfile copies, run with only the deploy dependencies,
   passed the passcode checks and the full rider/customer flow in a browser. (Docker Hub was unreachable

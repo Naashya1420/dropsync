@@ -41,9 +41,27 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 # passcode page first; API and WebSocket calls without the cookie are refused.
 PASSCODE = os.environ.get("DROPSYNC_PASSCODE", "").strip()
 _TOKEN = hashlib.sha256(f"dropsync:{PASSCODE}".encode()).hexdigest() if PASSCODE else ""
-_OPEN = ("/login", "/favicon.svg", "/api/health")
+_OPEN = ("/login", "/favicon.svg", "/api/health", "/icons/", "/app.webmanifest", "/rider.webmanifest",
+         "/track.webmanifest")
+
+# Installable web app (Add to Home Screen opens full-screen, not in Safari): each phone
+# page gets its own manifest, icon and name so the icon opens the right screen.
+_APPS = {"rider": ("rider", "DropSync Rider", "/icons/rider-180.png"),
+         "track": ("track", "DropSync Customer", "/icons/customer-180.png")}
+
+
+def _app_for(path: str):
+    key = path.strip("/").split("/")[0]
+    return _APPS.get(key, ("app", "DropSync", "/icons/app-180.png"))
+
+
+def _webapp_head(path: str) -> str:
+    man, title, icon = _app_for(path)
+    return (f'<link rel="manifest" href="/{man}.webmanifest"><link rel="apple-touch-icon" href="{icon}">'
+            '<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">'
+            f'<meta name="apple-mobile-web-app-title" content="{html.escape(title)}">')
 _LOGIN_HTML = """<!doctype html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>DropSync</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>DropSync</title>__HEAD__
 <style>:root{color-scheme:light dark}body{margin:0;min-height:100dvh;display:grid;place-items:center;
 font-family:system-ui,sans-serif;background:#f6f5f3;color:#1d1f23}
 @media (prefers-color-scheme:dark){body{background:#131416;color:#eceef0}input{background:#1c1e21;color:#eceef0}}
@@ -68,7 +86,8 @@ async def passcode_gate(request: Request, call_next):
     if path.startswith("/api/"):
         return JSONResponse({"detail": "passcode required"}, status_code=401)
     nxt = path if path.startswith("/") and not path.startswith("//") else "/"
-    return HTMLResponse(_LOGIN_HTML.replace("__NEXT__", html.escape(nxt)).replace("__ERR__", ""), status_code=401)
+    page = _LOGIN_HTML.replace("__NEXT__", html.escape(nxt)).replace("__ERR__", "").replace("__HEAD__", _webapp_head(nxt))
+    return HTMLResponse(page, status_code=401)
 
 
 @app.post("/login")
@@ -79,8 +98,9 @@ async def login(code: str = Form(""), next: str = Form("/")):
         r.set_cookie("ds_pass", _TOKEN, max_age=30 * 24 * 3600, httponly=True, samesite="lax",
                      secure=os.environ.get("DROPSYNC_HTTPS", "1") == "1")
         return r
-    return HTMLResponse(_LOGIN_HTML.replace("__NEXT__", html.escape(next)).replace("__ERR__", "Wrong passcode"),
-                        status_code=401)
+    page = (_LOGIN_HTML.replace("__NEXT__", html.escape(next)).replace("__ERR__", "Wrong passcode")
+            .replace("__HEAD__", _webapp_head(next)))
+    return HTMLResponse(page, status_code=401)
 
 
 def _load_json(p: Path, default=None):
@@ -410,9 +430,18 @@ WEB = ROOT / "web" / "dist"
 if WEB.exists():
     app.mount("/assets", StaticFiles(directory=WEB / "assets"), name="assets")
 
+    _INDEX = (WEB / "index.html").read_text()
+
     @app.get("/{path:path}")
     def spa(path: str):
         f = WEB / path
-        if path and f.is_file():
+        if path and f.is_file() and f.resolve().is_relative_to(WEB.resolve()):
+            if f.suffix == ".webmanifest":
+                return FileResponse(f, media_type="application/manifest+json")
             return FileResponse(f)
-        return FileResponse(WEB / "index.html")
+        man, title, icon = _app_for("/" + path)
+        page = (_INDEX.replace("/app.webmanifest", f"/{man}.webmanifest")
+                .replace("/icons/app-180.png", icon)
+                .replace('content="DropSync" />', f'content="{html.escape(title)}" />')
+                .replace("<title>DropSync</title>", f"<title>{html.escape(title)}</title>"))
+        return HTMLResponse(page)
