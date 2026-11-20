@@ -14,6 +14,13 @@ Read sections 1–3 first; the rest is reference.
 
 ## 0. Latest changes (20 Nov) — read this first
 
+**Fix (20 Nov, late): demo rider now walks the blue dotted block route** — `backend/realtime.py`
+- Before: after the gate the animated rider jumped to the learned parking spot (sometimes off the route) and walked a straight line to the route, so he did not follow the blue dotted line.
+- Now: the parking stop is the route point nearest the learned parking (if within 40 m, else the gate); the rider rides in along the route to it and walks the rest of the route (`Order.park_idx`, `_along_walk`).
+- Checked: 21 block orders (Sterling Shalom, Brigade Metropolis) — every rider position during parking/walk is 0.0 m from the blue line; 14 tests pass.
+
+**metrics.json refreshed (20 Nov)** — `python -m pipeline.evaluate --fast` (157 s). The old file (19 Nov 00:53) predated profile builder v2 + the ML model and did not match the deck. Now matches slide 12: gate 96.0% (151 sites), hint coverage 98.7%, held-out 83.3%, handover rule 92.1%, parking 4.36 m, A/B 4,050 orders: handover 6.8 → 3.3 min, rider wait 3.8 → 0 min, calls 100% → 19%. `--fast` skips the robustness section (not in the file now).
+
 **1. How DropSync learns a building (v2)** — `pipeline/profile_builder.py`
 - Two layers:
   - **(a)** each delivery is *read* (which gate the rider got in through, where he was turned away);

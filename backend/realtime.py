@@ -153,6 +153,7 @@ class Order:
     helped: bool | None = None
     delivered_wall: float | None = None   # wall-clock time of delivery (for stale-order checks)
     inside_route: list = field(default_factory=list)   # walking route gate -> block door (inside the society)
+    park_idx: int = 0                                  # parking stop = inside_route[park_idx] (on the shown route)
     block: dict | None = None
 
 
@@ -184,13 +185,10 @@ def lead_time(profile: dict, tower: dict) -> tuple[float | None, str]:
 def _along_walk(o, f: float):
     """Position after fraction f of the walk from the parking spot to the handover point,
     following the society's internal route when one exists (not a straight line)."""
-    pts = [o.parking]
-    if o.inside_route:
-        # join the route at its point nearest the parking spot
-        j = min(range(len(o.inside_route)), key=lambda i: hav(o.inside_route[i], o.parking))
-        pts += o.inside_route[j:]
+    if len(o.inside_route) > 1:
+        pts = list(o.inside_route[o.park_idx:])   # parking stop is on the route: walk the rest of it
     else:
-        pts.append(o.handover_point)
+        pts = [o.parking, o.handover_point]
     seg = [hav(pts[i], pts[i + 1]) for i in range(len(pts) - 1)]
     total = sum(seg) or 1.0
     d = f * total
@@ -246,6 +244,14 @@ class Hub:
         else:
             hp = block_door
             inside = [tuple(p) for p in (route or {}).get("path", [])] + [hp]
+        # The rider moves only along the route shown on the map: the parking stop is the
+        # route point nearest the learned parking spot (if that spot is on/near this route),
+        # otherwise the rider parks at the gate and walks the whole route.
+        park_idx = 0
+        if len(inside) > 1:
+            j = min(range(len(inside) - 1), key=lambda i: hav(inside[i], parking))
+            park_idx = j if hav(inside[j], parking) <= 40.0 else 0
+            parking = inside[park_idx]
         block = dict(name=tower.get("name"), levels=tower.get("levels"),
                      walk_m=(route or {}).get("m"), mapped=bool((route or {}).get("mapped")),
                      door_learned=bool(door), door_trips=(door or {}).get("trips", 0),
@@ -285,7 +291,7 @@ class Hub:
                   handover_point=hp, handover_type=htype, lead_s=lead, lead_explain=why,
                   sync_enabled=sync_enabled and bool(prof and prof.get("show_sync")),
                   cust_descent_s=cust_descent, manual=manual, pickup=pickup, route_pickup=route_pickup,
-                  inside_route=inside, block=block)
+                  inside_route=inside, park_idx=park_idx, block=block)
         o.rider = route_pickup[0] if route_pickup else route[0]
         self.orders[o.order_id] = o
         self.latest = o.order_id
@@ -477,12 +483,18 @@ class Hub:
                 o.eta_s = max(0.0, GUARD_CHECK_S - phase_t) + PARK_S + post_hp
                 if phase_t >= GUARD_CHECK_S:
                     o.phase, phase_t = "parking", 0.0
-                    o.rider = o.parking
+                    if not (len(o.inside_route) > 1 and o.park_idx):
+                        o.rider = o.parking
                     self._event(o, "parked", "Parked at the learned parking point" if (o.profile or {}).get("parking")
                                 else "Parked at the gate")
             elif o.phase == "parking":
                 phase_t += dt
                 o.eta_s = max(0.0, PARK_S - phase_t) + post_hp
+                if len(o.inside_route) > 1 and o.park_idx:
+                    # ride in along the shown route from the gate to the parking stop
+                    rt = o.inside_route[: o.park_idx + 1]
+                    lens = [hav(rt[i], rt[i + 1]) for i in range(len(rt) - 1)]
+                    o.rider = along(rt, lens, sum(lens) * min(1.0, phase_t / PARK_S))
                 if phase_t >= PARK_S:
                     o.phase, phase_t = "walk", 0.0
             elif o.phase == "walk":

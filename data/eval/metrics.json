@@ -97,165 +97,172 @@
   },
   "profile_accuracy": {
     "sites": 151,
-    "sites_multi_gate": 73,
-    "gate_accuracy_all": 0.9073,
-    "gate_accuracy_multi_gate": 0.8082,
-    "gate_hint_coverage": 0.7152,
-    "gate_hint_precision": 0.9444,
-    "gate_hint_precision_multi_gate": 0.8723,
-    "night_gate_sites": 24,
-    "night_gate_recall": 0.0833,
+    "sites_multi_gate": 67,
+    "gate_accuracy_all": 0.9603,
+    "gate_accuracy_multi_gate": 0.9104,
+    "gate_hint_coverage": 0.9868,
+    "gate_hint_precision": 0.9597,
+    "gate_hint_precision_multi_gate": 0.9077,
+    "night_gate_sites": 22,
+    "night_gate_recall": 0.1364,
     "night_gate_sites_with_enough_trips": 4,
-    "night_gate_recall_enough_trips": 0.5,
+    "night_gate_recall_enough_trips": 0.75,
     "night_gate_false_alarm_rate": 0.0,
     "handover_type_accuracy": 0.9205,
-    "handover_type_accuracy_shown": 0.951,
-    "checkout_banner_coverage": 0.947,
-    "sync_coverage_of_lobby_gate_sites": 0.9292,
+    "handover_type_accuracy_shown": 0.9444,
+    "checkout_banner_coverage": 0.9536,
+    "sync_coverage_of_lobby_gate_sites": 0.9386,
     "parking_error_m": {
-      "median": 4.293180351319662,
-      "p80": 7.1994552516319485
+      "median": 4.355237549246127,
+      "p80": 6.492502899911035
     },
     "handover_time_abs_error_s": {
-      "median": 5.486310625076271
+      "median": 6.822937393188454
     },
     "type_confusion": {
       "doorstep": {
-        "doorstep": 37,
+        "doorstep": 36,
         "gate": 0,
         "lobby": 0
       },
       "gate": {
         "doorstep": 1,
-        "gate": 39,
+        "gate": 36,
         "lobby": 11
       },
       "lobby": {
         "doorstep": 0,
         "gate": 0,
-        "lobby": 63
+        "lobby": 67
       }
+    },
+    "held_out_buildings": {
+      "sites": 24,
+      "gate_accuracy_multi_gate": 0.8333,
+      "gate_hint_precision": 0.8182,
+      "gate_hint_coverage": 0.9167,
+      "handover_type_accuracy": 0.8333
     }
   },
   "baselines": {
-    "trips_by_riders_new_to_site": 2176,
-    "share_of_all_trips": 0.2195,
-    "navigation_gate_correct": 0.761,
-    "wrong_gate_trips_share": 0.0524,
+    "trips_by_riders_new_to_site": 2132,
+    "share_of_all_trips": 0.215,
+    "navigation_gate_correct": 0.7899,
+    "wrong_gate_trips_share": 0.0452,
     "wrong_gate_penalty_s": {
-      "median": 105.25610894051985
+      "median": 105.14121548422386
     }
   },
   "recency": {
-    "with_recency": 0.6667,
+    "with_recency": 1.0,
     "sites": 6,
-    "without_recency": 0.6667
+    "without_recency": 1.0
   },
   "pin_fixer": {
     "rule": "lobby sites: flag when the pin is >10 m from every tower or on a different tower than the rider's handover stop",
-    "precision": 0.564,
-    "recall": 0.6229,
-    "flagged": 984,
-    "evaluated": 4369
+    "precision": 0.5736,
+    "recall": 0.6292,
+    "flagged": 1053,
+    "evaluated": 4596
   },
   "ab_sync": {
     "all_orders": {
       "orders": 5119,
       "handover_time_s": {
-        "today_median": 395.8,
-        "dropsync_median": 241.4,
-        "today_mean": 423.5,
-        "dropsync_mean": 271.6
+        "today_median": 395.3,
+        "dropsync_median": 237.6,
+        "today_mean": 421.9,
+        "dropsync_mean": 269.1
       },
       "rider_wait_at_handover_s": {
-        "today_median": 208.5,
+        "today_median": 207.9,
         "dropsync_median": 0.0,
-        "today_mean": 196.5,
-        "dropsync_mean": 46.8
+        "today_mean": 195.0,
+        "dropsync_mean": 46.1
       },
       "customer_wait_at_handover_s": {
-        "dropsync_median": 19.7,
-        "dropsync_p80": 123.7
+        "dropsync_median": 19.2,
+        "dropsync_p80": 124.8
       },
       "call_rate": {
-        "today": 0.7908,
-        "dropsync": 0.1524
+        "today": 0.7912,
+        "dropsync": 0.151
       },
-      "rider_minutes_saved_per_order": 2.532
+      "rider_minutes_saved_per_order": 2.546
     },
     "lobby_gate_orders": {
-      "orders": 4048,
+      "orders": 4050,
       "handover_time_s": {
-        "today_median": 407.6,
-        "dropsync_median": 202.1,
-        "today_mean": 435.2,
-        "dropsync_mean": 243.1
+        "today_median": 407.9,
+        "dropsync_median": 200.3,
+        "today_mean": 435.3,
+        "dropsync_mean": 242.6
       },
       "rider_wait_at_handover_s": {
-        "today_median": 227.0,
+        "today_median": 226.8,
         "dropsync_median": 0.0,
-        "today_mean": 248.5,
-        "dropsync_mean": 59.2
+        "today_mean": 246.5,
+        "dropsync_mean": 58.3
       },
       "customer_wait_at_handover_s": {
-        "dropsync_median": 64.4,
-        "dropsync_p80": 139.0
+        "dropsync_median": 62.9,
+        "dropsync_p80": 139.5
       },
       "call_rate": {
         "today": 1.0,
-        "dropsync": 0.1927
+        "dropsync": 0.1909
       },
-      "rider_minutes_saved_per_order": 3.201
+      "rider_minutes_saved_per_order": 3.212
     },
     "synced_orders": {
-      "orders": 3841,
+      "orders": 3890,
       "handover_time_s": {
-        "today_median": 410.7,
-        "dropsync_median": 193.6,
-        "today_mean": 439.0,
-        "dropsync_mean": 236.6
+        "today_median": 409.7,
+        "dropsync_median": 194.0,
+        "today_mean": 437.6,
+        "dropsync_mean": 237.0
       },
       "rider_wait_at_handover_s": {
-        "today_median": 228.7,
+        "today_median": 228.4,
         "dropsync_median": 0.0,
-        "today_mean": 251.1,
-        "dropsync_mean": 51.5
+        "today_mean": 248.5,
+        "dropsync_mean": 52.6
       },
       "customer_wait_at_handover_s": {
-        "dropsync_median": 70.1,
+        "dropsync_median": 68.0,
         "dropsync_p80": 141.6
       },
       "call_rate": {
         "today": 1.0,
-        "dropsync": 0.1492
+        "dropsync": 0.1576
       },
-      "rider_minutes_saved_per_order": 3.373
+      "rider_minutes_saved_per_order": 3.342
     },
     "hint_used_orders": {
-      "orders": 760,
+      "orders": 1110,
       "handover_time_s": {
-        "today_median": 396.0,
-        "dropsync_median": 216.0,
-        "today_mean": 417.6,
-        "dropsync_mean": 249.3
+        "today_median": 402.8,
+        "dropsync_median": 254.3,
+        "today_mean": 443.8,
+        "dropsync_mean": 282.6
       },
       "rider_wait_at_handover_s": {
-        "today_median": 216.1,
+        "today_median": 207.9,
         "dropsync_median": 0.0,
-        "today_mean": 201.3,
-        "dropsync_mean": 47.7
+        "today_mean": 193.4,
+        "dropsync_mean": 50.1
       },
       "customer_wait_at_handover_s": {
-        "dropsync_median": 4.8,
-        "dropsync_p80": 116.2
+        "dropsync_median": 0.0,
+        "dropsync_p80": 121.2
       },
       "call_rate": {
-        "today": 0.7855,
-        "dropsync": 0.1513
+        "today": 0.7712,
+        "dropsync": 0.1586
       },
-      "rider_minutes_saved_per_order": 2.804
+      "rider_minutes_saved_per_order": 2.686
     },
-    "nudge_followed_rate": 0.8508,
+    "nudge_followed_rate": 0.8424,
     "histogram": {
       "bins_s": [
         0,
@@ -279,130 +286,130 @@
         0,
         0,
         3,
-        77,
-        373,
-        818,
-        946,
-        734,
-        433,
-        222,
-        134,
-        107,
-        63,
-        52,
-        86
+        69,
+        370,
+        826,
+        942,
+        730,
+        448,
+        215,
+        158,
+        109,
+        61,
+        39,
+        80
       ],
       "dropsync": [
+        77,
+        994,
+        689,
+        699,
+        365,
+        338,
+        291,
+        218,
+        178,
         81,
-        1004,
-        676,
-        672,
-        364,
-        347,
-        318,
-        214,
-        173,
-        83,
-        45,
-        25,
-        16,
+        43,
+        29,
+        18,
         13,
         17
       ]
     },
     "after_feedback": {
       "lobby_gate_orders": {
-        "orders": 4048,
+        "orders": 4050,
         "handover_time_s": {
-          "today_median": 407.6,
-          "dropsync_median": 210.3,
-          "today_mean": 435.2,
-          "dropsync_mean": 249.4
+          "today_median": 407.9,
+          "dropsync_median": 209.3,
+          "today_mean": 435.3,
+          "dropsync_mean": 248.5
         },
         "rider_wait_at_handover_s": {
-          "today_median": 227.0,
+          "today_median": 226.8,
           "dropsync_median": 0.0,
-          "today_mean": 248.5,
-          "dropsync_mean": 65.5
+          "today_mean": 246.5,
+          "dropsync_mean": 64.2
         },
         "customer_wait_at_handover_s": {
-          "dropsync_median": 2.9,
-          "dropsync_p80": 65.5
+          "dropsync_median": 4.8,
+          "dropsync_p80": 66.8
         },
         "call_rate": {
           "today": 1.0,
-          "dropsync": 0.1927
+          "dropsync": 0.1909
         },
-        "rider_minutes_saved_per_order": 3.096
+        "rider_minutes_saved_per_order": 3.114
       },
       "synced_orders": {
-        "orders": 3841,
+        "orders": 3890,
         "handover_time_s": {
-          "today_median": 410.7,
-          "dropsync_median": 203.2,
-          "today_mean": 439.0,
-          "dropsync_mean": 243.3
+          "today_median": 409.7,
+          "dropsync_median": 204.4,
+          "today_mean": 437.6,
+          "dropsync_mean": 243.2
         },
         "rider_wait_at_handover_s": {
-          "today_median": 228.7,
+          "today_median": 228.4,
           "dropsync_median": 0.0,
-          "today_mean": 251.1,
-          "dropsync_mean": 58.2
+          "today_mean": 248.5,
+          "dropsync_mean": 58.7
         },
         "customer_wait_at_handover_s": {
-          "dropsync_median": 8.0,
-          "dropsync_p80": 67.7
+          "dropsync_median": 8.6,
+          "dropsync_p80": 68.8
         },
         "call_rate": {
           "today": 1.0,
-          "dropsync": 0.1492
+          "dropsync": 0.1576
         },
-        "rider_minutes_saved_per_order": 3.262
+        "rider_minutes_saved_per_order": 3.24
       },
       "note": "lead time = median observed 'Coming' tap -> customer at handover point"
     }
   },
   "sizing": {
-    "minutes_saved_per_lobby_gate_order_simulated": 3.201,
+    "minutes_saved_per_lobby_gate_order_simulated": 3.212,
     "share_20pct": {
-      "rider_minutes_per_day": 2304720,
-      "rupees_crore_per_year": 168.2
+      "rider_minutes_per_day": 2312640,
+      "rupees_crore_per_year": 168.8
     },
     "share_30pct": {
-      "rider_minutes_per_day": 3457080,
-      "rupees_crore_per_year": 252.4
+      "rider_minutes_per_day": 3468960,
+      "rupees_crore_per_year": 253.2
     },
     "note": "Simulated minutes replace the PDF's 1.0 / 0.5 assumption; orders, share and Rs 2/min are the PDF's inputs."
   },
   "learning_curve": [
     {
       "trips": 3,
-      "gate_accuracy_multi_gate": 0.9487,
-      "handover_type_accuracy": 0.8854,
+      "gate_accuracy_multi_gate": 0.9231,
+      "handover_type_accuracy": 0.8958,
       "sites": 32
     },
     {
       "trips": 5,
-      "gate_accuracy_multi_gate": 0.8974,
-      "handover_type_accuracy": 0.9271,
+      "gate_accuracy_multi_gate": 0.9231,
+      "handover_type_accuracy": 0.9479,
       "sites": 32
     },
     {
       "trips": 10,
-      "gate_accuracy_multi_gate": 1.0,
-      "handover_type_accuracy": 0.9375,
+      "gate_accuracy_multi_gate": 0.9487,
+      "handover_type_accuracy": 0.9167,
       "sites": 32
     },
     {
       "trips": 20,
-      "gate_accuracy_multi_gate": 1.0,
-      "handover_type_accuracy": 0.9375,
+      "gate_accuracy_multi_gate": 0.9744,
+      "handover_type_accuracy": 0.9479,
       "sites": 32
     },
     {
       "trips": 40,
-      "gate_accuracy_multi_gate": 1.0,
-      "handover_type_accuracy": 0.9271,
+      "gate_accuracy_multi_gate": 0.9487,
+      "handover_type_accuracy": 0.9375,
       "sites": 32
     },
     {
@@ -410,64 +417,6 @@
       "gate_accuracy_multi_gate": 1.0,
       "handover_type_accuracy": 0.9375,
       "sites": 32
-    }
-  ],
-  "robustness": [
-    {
-      "noise_sigma_m": 5.62,
-      "noise_scale": 1,
-      "ping_interval_s": 5,
-      "sites": 25,
-      "gate_accuracy_multi_gate": 0.84,
-      "handover_type_accuracy": 0.92
-    },
-    {
-      "noise_sigma_m": 5.62,
-      "noise_scale": 1,
-      "ping_interval_s": 10,
-      "sites": 25,
-      "gate_accuracy_multi_gate": 0.92,
-      "handover_type_accuracy": 0.88
-    },
-    {
-      "noise_sigma_m": 5.62,
-      "noise_scale": 1,
-      "ping_interval_s": 15,
-      "sites": 25,
-      "gate_accuracy_multi_gate": 0.88,
-      "handover_type_accuracy": 0.92
-    },
-    {
-      "noise_sigma_m": 5.62,
-      "noise_scale": 1,
-      "ping_interval_s": 20,
-      "sites": 25,
-      "gate_accuracy_multi_gate": 0.92,
-      "handover_type_accuracy": 0.88
-    },
-    {
-      "noise_sigma_m": 5.62,
-      "noise_scale": 1,
-      "ping_interval_s": 30,
-      "sites": 25,
-      "gate_accuracy_multi_gate": 0.96,
-      "handover_type_accuracy": 0.92
-    },
-    {
-      "noise_sigma_m": 11.24,
-      "noise_scale": 2,
-      "ping_interval_s": 15,
-      "sites": 25,
-      "gate_accuracy_multi_gate": 0.84,
-      "handover_type_accuracy": 0.8
-    },
-    {
-      "noise_sigma_m": 16.86,
-      "noise_scale": 3,
-      "ping_interval_s": 15,
-      "sites": 25,
-      "gate_accuracy_multi_gate": 0.84,
-      "handover_type_accuracy": 0.36
     }
   ]
 }
